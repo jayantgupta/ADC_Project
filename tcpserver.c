@@ -12,9 +12,11 @@
 //#include <string.h>
 //#include <stdbool.h>
 
-int main()
-{
-	
+int main(int argc, char *argv[]){
+	if(argc != 2){
+		printf("Error\nUsage ./tcpserver.exec port\n");
+		exit(1);
+	}	
 	/*
 		Setting up the key-value directory.
 	*/
@@ -37,7 +39,7 @@ int main()
 		exit(1);
 	}
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(9006);
+	server_addr.sin_port = htons(atoi(argv[1]));
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(server_addr.sin_zero),8);
 	/* bind the socket to an address */

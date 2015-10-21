@@ -9,13 +9,17 @@
 #include <unistd.h>
 #include <errno.h>
 #include<stdbool.h>
-int main()
-{
+int main(int argc, char *argv []){
+    if(argc != 3){
+	    printf("Error\nUsage ./tcpclient.exec host-name/host-IP port\n");
+	    exit(1);
+    }
+    printf("%s %s\n",argv[1], argv[2]);
     int sockfd, recv_bytes;
     char send_buff[1024],recv_buff[1024];
     struct hostent *host;
     struct sockaddr_in server_addr;
-    host = gethostbyname("127.0.0.1");
+    host = gethostbyname(argv[1]);
     /* creating a socket */
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     {
@@ -23,7 +27,7 @@ int main()
         exit(1);
     }
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(9006);
+    server_addr.sin_port = htons(atoi(argv[2]));
     server_addr.sin_addr = *((struct in_addr *)host->h_addr);
     bzero(&(server_addr.sin_zero),8);
     /*connect the socket to address of server*/

@@ -4,3 +4,5 @@ gcc -c test.c -o mytest.o
 gcc mytest.o keyval.o -o mytest.exec
 gcc tcpserver.o keyval.o -o tcpserver.exec
 gcc tcpclient.c -o tcpclient.exec
+rm *.o
+rm *.exec
