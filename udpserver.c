@@ -1,4 +1,4 @@
-/* tcpserver.c */
+/* udpserver.c */
 
 #include "keyval.h"
 #include "logfile.h"
@@ -25,10 +25,10 @@ int main()
 	bool val = true;
 	struct sockaddr_in server_addr, client_addr;
 	int sin_size;
-        const char *log_filename = "server_log";
+        const char *log_filename = "server_log_udp";
        
 	/* creating a socket */
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	{
 		perror("Error opening socket");
 		exit(1);
@@ -43,39 +43,28 @@ int main()
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	bzero(&(server_addr.sin_zero),8);
 	/* bind the socket to an address */
-	if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr)) == -1)
+	if (bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
 	{
 		perror("Error in binding");
 		exit(1);
 	}
-	/* listen for connections*/
-	if (listen(sockfd, 5) == -1)
-	{
-		perror("Listen");
-		exit(1);
-	}
-        /* logging server listening */
-        printf("Server Listening ..\n");
-	callLog("Server listening \n", log_filename);
-	fflush(stdout);
-	while(1)
-	{
+	
 		char send_buff [1024] , recv_buff[1024];
-		sin_size = sizeof(struct sockaddr_in);
-		/* accept the connection */
-		newsock = accept(sockfd, (struct sockaddr *)&client_addr,&sin_size);
+		sin_size = sizeof(client_addr);
+                printf("Server Listening ..\n");
+		
 		while(1)
 		{
 			/*receive message from client */
-			recv_bytes = recv(newsock, recv_buff, 1024, 0);
+			recv_bytes = recvfrom(sockfd, recv_buff, 1024, 0,(struct sockaddr *)&client_addr,&sin_size);
 			recv_buff[recv_bytes]= '\0';
 			printf("Message from client : |%s| of size : %d\n" , recv_buff, recv_bytes);
 			if (strcmp(recv_buff , "q") == 0 || strcmp(recv_buff , "Q") == 0)
 			{
 				//printf("Closing Connection\n");
                                 callLog("Closing Connnection \n", log_filename);
-				send(newsock, "Q", 2, 0);
-				close(newsock);
+				sendto(sockfd, "Q", 2, 0,(struct sockaddr *)&client_addr,sizeof(struct sockaddr));
+				close(sockfd);
 				break;
 			}
 			fflush(stdout);
@@ -91,30 +80,33 @@ int main()
 			{  
 				allTokens[i] = token;
 				token = strtok(NULL, s);
+				printf("token : %s",allTokens[i]);
 				i++;
 			}
 			if(token != NULL && i >= 3){
 				//printf("Error in syntax\n");
                                 callLog("Error in syntax \n", log_filename);
-				send(newsock, "ERROR", 6, 0);
+				sendto(sockfd, "ERROR", 6, 0,(struct sockaddr *)&client_addr,sin_size);
 				break;
 			}
 			if(strcmp(allTokens[0],"GET") == 0){
+				printf("Inside GET\n");
 				callLog("Called method GET \n", log_filename);
 				int key = atoi(allTokens[1]);
 				char *getValue = GET(key);
-				send(newsock, getValue, strlen(getValue), 0);             
+				sendto(sockfd, getValue, strlen(getValue), 0,(struct sockaddr *)&client_addr,sin_size);             
+				
 			}
 			else if(strcmp(allTokens[0],"PUT") == 0){
 				callLog("Called method PUT \n", log_filename);
 				bool putValue = PUT(atoi(allTokens[1]), allTokens[2]); 
 				if(putValue){
-					send(newsock, "Successfully updated", 21, 0); 
+					sendto(sockfd, "Successfully updated", 21, 0,(struct sockaddr *)&client_addr,sin_size); 
                                         callLog("Successfully Updated\n", log_filename);
 				}
 
 				else{
-					send(newsock, "Error in updating",18, 0);
+					sendto(sockfd, "Error in updating",18, 0,(struct sockaddr *)&client_addr,sin_size);
                                         callLog("Error in updating \n", log_filename);
 				}
 
@@ -123,24 +115,26 @@ int main()
 				callLog("Called method DELETE \n", log_filename);
 				bool delValue = DELETE(atoi(allTokens[1]));
 				if(delValue){
-					send(newsock, "Successfully deleted",21, 0); 
+					sendto(sockfd, "Successfully deleted",21, 0,(struct sockaddr *)&client_addr,sin_size); 
                                         callLog("Successfully Deleted \n", log_filename);
 				}
 				else{
-					send(newsock, "Error in deleting",18, 0);
+					sendto(sockfd, "Error in deleting",18, 0,(struct sockaddr *)&client_addr,sin_size);
                                         callLog("Error in Deleting \n", log_filename);
 				}                
 			}
 			else{
 				printf("Error in syntax : Improper Command");
                                 callLog("Error in syntax : Improper Command \n", log_filename);
-				send(newsock, "ERROR in CMD", 13, 0);
+				sendto(sockfd, "ERROR in CMD", 13, 0,(struct sockaddr *)&client_addr,sin_size);
 			}
+                
+		//break; // Putting this break right now to server one client only.
 		}
-		printf("Connection Served\n");
+                printf("Connection Served\n");
                 callLog("Connection served \n", log_filename);
-		break; // Putting this break right now to server one client only.
-	}
+		
+	
 	close(sockfd);
 	return 0;
 }
