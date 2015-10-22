@@ -2,21 +2,25 @@
 CC = gcc
 
 #C Flags to use.
-CFLAGS = -c
+CFLAGS = -c 
 
-all: tcpserver.exec tcpclient.exec udpserver.exec udpclient.exec clean
+
+all: tcpserver.exec tcpclient.exec udpserver.exec udpclient.exec test.exec clean
 
 tcpserver.exec: tcpserver.o keyval.o logfile.o
-	$(CC) tcpserver.o keyval.o logfile.o -o tcpserver.exec
+	$(CC) tcpserver.o keyval.o logfile.o -lm -o tcpserver.exec
 
 tcpclient.exec: tcpclient.o logfile.o
-	$(CC) tcpclient.o logfile.o -o tcpclient.exec
+	$(CC) tcpclient.o logfile.o -lm -o tcpclient.exec
 
 udpserver.exec: udpserver.o keyval.o logfile.o
-	$(CC) udpserver.o keyval.o logfile.o -o udpserver.exec
+	$(CC) udpserver.o keyval.o logfile.o -lm -o udpserver.exec
 
 udpclient.exec: udpclient.o logfile.o
-	$(CC) udpclient.o logfile.o -o udpclient.exec
+	$(CC) udpclient.o logfile.o -lm -o udpclient.exec
+
+test.exec: test.o logfile.o 
+	$(CC) test.o logfile.o -lm -o test.exec
 
 tcpclient.o: tcpclient.c
 	$(CC) $(CFLAGS) tcpclient.c -o tcpclient.o
@@ -34,7 +38,10 @@ keyval.o: keyval.c
 	$(CC) $(CFLAGS) keyval.c -o keyval.o
 
 logfile.o: logfile.c
-	$(CC) $(CFLAGS) logfile.c -o logfile.o
+	$(CC) $(CFLAGS) logfile.c -lm -o logfile.o
+
+test.o: test.c
+	$(CC) $(CFLAGS) test.c -o test.o
 
 clean:
 	rm *.o
