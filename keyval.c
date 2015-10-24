@@ -13,19 +13,13 @@
 #include "keyval.h"
 /* Data Structures*/
 char dict[100000][25]; // Data Structure storing the dictionary.
-bool flag[100000];
+bool flag[100000]={0};
 
 /* Functions*/
 void init_dict(const char *file_name);
 bool PUT(int key, char * value);
 char * GET(int key);
 bool DELETE(int key);
-
-//main(){
-//	const char *name="word_list";
-//	init_dict(name);
-//	printf("%s", GET(8));
-//}
 
 // Note: each string has a newline character at the end.
 void init_dict(const char *file_name){
@@ -77,13 +71,13 @@ char *GET(int key){
 			return dict[key];
 		}
 		else{
-			printf("Value does not exist\n");
-			return NULL;
+//			printf("Value does not exist\n");
+			return "Invalid Key";
 		}
 	}
 	else{
-		printf("Invalid Key\n");
-		return false;
+//		printf("Invalid Key\n");
+		return "Invalid Key";
 	}	
 }
 

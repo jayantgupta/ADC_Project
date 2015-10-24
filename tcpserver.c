@@ -6,12 +6,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-//#include <stdio.h>
-//#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-//#include <string.h>
-//#include <stdbool.h>
 
 int main(int argc, char *argv[]){
 	if(argc != 2){
@@ -22,12 +18,12 @@ int main(int argc, char *argv[]){
 		Setting up the key-value directory.
 	*/
 	const char *name = "word_list";
-	init_dict(name);	
+	//init_dict(name);	
 	int sockfd, newsock, recv_bytes ;
 	bool val = true;
 	struct sockaddr_in server_addr, client_addr;
 	int sin_size;
-        const char *log_filename = "tcp_server.log";
+  const char *log_filename = "tcp_server.log";
        
 	/* creating a socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)

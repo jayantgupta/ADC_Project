@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <sys/select.h>
 
+void init(int sockfd, fd_set myset, struct timeval tv, const char* log_filename);
+
 int main(int argc, char *argv []){
     // Check for Arguments
     if(argc != 3){
@@ -52,7 +54,7 @@ int main(int argc, char *argv []){
     tv.tv_usec = 0; // microseconds
     FD_ZERO(&myset);
     FD_SET(sockfd, &myset);
-    
+    init(sockfd, myset, tv, log_filename); 
     while(1)
     {
        /* Get message to send to the server */
@@ -89,4 +91,34 @@ int main(int argc, char *argv []){
         }
     }
     return 0;
+}
+
+void init(int sockfd, fd_set myset, struct timeval tv, const char *log_filename){
+				printf("Initializing the Key-Value store\n");
+				callLog("Initiailizing the Server\n", log_filename);
+				char *INIT[7] = {"PUT:0:Monday", "PUT:1:Tuesday", "PUT:2:Wednesday", "PUT:3:Thursday", "PUT:4:Friday", "PUT:5:Saturday", "PUT:6:Sunday"};
+				char recv_buff[1024];
+				int status, i, recv_bytes;
+				int send_count = 1;
+				
+				for(i = 0 ; i < 7 ; i++){
+								send(sockfd, INIT[i], strlen(INIT[i]), 0);
+								callLog("Message sent to server\n", log_filename);
+								while((status=select(sockfd + 1, &myset, NULL, NULL, &tv)) <= 0 && send_count < 5){
+												send(sockfd, INIT[i], strlen(INIT[1]), 0);
+												printf("Re-sending Request to Server %d time\n",send_count);
+												send_count++;
+								}
+								if(status > 0){
+												recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+												callLog("Message received from server\n", log_filename);
+												recv_buff[recv_bytes] = '\0';
+												printf("Message from server : %s \n" , recv_buff);
+								}
+								else if(status <= 0 && send_count == 5){
+												printf("Resend failed\n");
+												callLog("Resend failed\n", log_filename);
+								}
+				}
+				return;
 }

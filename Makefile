@@ -45,3 +45,4 @@ test.o: test.c
 
 clean:
 	rm *.o
+	rm *.log
