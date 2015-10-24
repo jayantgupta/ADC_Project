@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -c 
 
 
-all: tcpserver.exec tcpclient.exec udpserver.exec udpclient.exec test.exec clean
+all: tcpserver.exec tcpclient.exec udpserver.exec udpclient.exec clean
 
 tcpserver.exec: tcpserver.o keyval.o logfile.o
 	$(CC) tcpserver.o keyval.o logfile.o -lm -o tcpserver.exec
@@ -19,8 +19,8 @@ udpserver.exec: udpserver.o keyval.o logfile.o
 udpclient.exec: udpclient.o logfile.o
 	$(CC) udpclient.o logfile.o -lm -o udpclient.exec
 
-test.exec: test.o logfile.o 
-	$(CC) test.o logfile.o -lm -o test.exec
+#test.exec: test.o logfile.o 
+#	$(CC) test.o logfile.o -lm -o test.exec
 
 tcpclient.o: tcpclient.c
 	$(CC) $(CFLAGS) tcpclient.c -o tcpclient.o
@@ -40,8 +40,8 @@ keyval.o: keyval.c
 logfile.o: logfile.c
 	$(CC) $(CFLAGS) logfile.c -lm -o logfile.o
 
-test.o: test.c
-	$(CC) $(CFLAGS) test.c -o test.o
+#test.o: test.c
+#	$(CC) $(CFLAGS) test.c -o test.o
 
 clean:
 	rm *.o
