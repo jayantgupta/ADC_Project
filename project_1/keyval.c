@@ -5,11 +5,6 @@
  functions related to the dictionary.
 */
 
-// #include<stdio.h>
-// #include<stdlib.h>
-// #include<string.h>
-// #include<stdbool.h>
-
 #include "keyval.h"
 /* Data Structures*/
 char dict[100000][25]; // Data Structure storing the dictionary.

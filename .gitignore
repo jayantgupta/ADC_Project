@@ -6,3 +6,5 @@
 *.log
 *.docx
 *.docx#
+*.pdf
+*.txt
