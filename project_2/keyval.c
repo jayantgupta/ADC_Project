@@ -12,9 +12,9 @@ bool flag[100000]={0};
 
 /* Functions*/
 void init_dict(const char *file_name);
-bool PUT(int key, char * value);
-char * GET(int key);
-bool DELETE(int key);
+bool _PUT(int key, char * value);
+char * _GET(int key);
+bool _DELETE(int key);
 
 // Note: each string has a newline character at the end.
 void init_dict(const char *file_name){
@@ -42,7 +42,7 @@ void init_dict(const char *file_name){
 	return;	
 }
 
-bool PUT(int key, char *value){
+bool _PUT(int key, char *value){
 	if(key >= 0 && key < 100000 ){
 		if(flag[key]){
 			printf("Key exists\n");
@@ -60,7 +60,7 @@ bool PUT(int key, char *value){
 	}	
 }
 
-char *GET(int key){
+char *_GET(int key){
 	if(key >= 0 && key < 100000 ){
 		if(flag[key]){
 			return dict[key];
@@ -76,7 +76,7 @@ char *GET(int key){
 	}	
 }
 
-bool DELETE(int key){
+bool _DELETE(int key){
 	if(key >= 0 && key < 100000 ){
 		if(flag[key]){
 			flag[key] = false;

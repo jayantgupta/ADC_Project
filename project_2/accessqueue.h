@@ -14,5 +14,6 @@ node *init();
 void enque(node * head, char *req, char *val);
 node *deque(node * head);
 bool isEmpty(node * head);
+char * submitRequest(int index, char *req, char *val);
 
 #endif

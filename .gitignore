@@ -8,3 +8,5 @@
 *.docx#
 *.pdf
 *.txt
+project_2/rpc_kv_client
+project_2/rpc_kv_server

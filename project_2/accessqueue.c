@@ -9,7 +9,7 @@
 #include "accessqueue.h"
 
 int main(){
-	
+
 	return 0;
 }
 
@@ -45,4 +45,23 @@ node * deque(node *head){
 // Checks if the queue is empty
 bool isEmpty(node *head){
 	return (head->next == NULL);
+}
+
+char * submitRequest(int index, char *req, char *val){
+	if(strcmp(req, "PUT") == 0){
+		if(PUT(index, val)){
+			return "PUT Success";
+		}
+		else return "PUT Failed";
+	}
+	else if(strcmp(req, "GET") == 0){
+		char * value = GET(index);
+		return value;
+	}
+	else if(strcmp(req, "DEL") == 0){
+		if(DELETE(index)){
+			return "DELETE Success";
+		}
+		else return "DELETE Failed";
+	}
 }
