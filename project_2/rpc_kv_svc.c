@@ -16,17 +16,36 @@
 #define SIG_PF void(*)(int)
 #endif
 
-static void
-keyval_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
+pthread_t p_thread;
+pthread_attr_t attr;
+
+/* Procedure to be trun by thread */
+
+void *
+serv_request(void *data)
 {
+	struct thr_data
+	{
+					struct svc_req *rqstp;
+					SVCXPRT *transp;
+	}*ptr_data;
 	union {
 		row put_1_arg;
 		int get_1_arg;
 		int delete_1_arg;
 	} argument;
-	char *result;
+	union {
+		bool_t put_1_res;
+		char *get_1_res;
+		bool_t delete_1_res;
+	} result;
+	bool_t retval;
 	xdrproc_t _xdr_argument, _xdr_result;
-	char *(*local)(char *, struct svc_req *);
+	bool_t (*local)(char *, void *, struct svc_req *);
+
+	ptr_data = (struct thr_data *)data;
+	struct svc_req *rqstp = ptr_data->rqstp;
+	register SVCXPRT *transp = ptr_data->transp;
 
 	switch (rqstp->rq_proc) {
 	case NULLPROC:
@@ -36,19 +55,19 @@ keyval_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 	case PUT:
 		_xdr_argument = (xdrproc_t) xdr_row;
 		_xdr_result = (xdrproc_t) xdr_bool;
-		local = (char *(*)(char *, struct svc_req *)) put_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))put_1_svc;
 		break;
 
 	case GET:
 		_xdr_argument = (xdrproc_t) xdr_int;
 		_xdr_result = (xdrproc_t) xdr_wrapstring;
-		local = (char *(*)(char *, struct svc_req *)) get_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))get_1_svc;
 		break;
 
 	case DELETE:
 		_xdr_argument = (xdrproc_t) xdr_int;
 		_xdr_result = (xdrproc_t) xdr_bool;
-		local = (char *(*)(char *, struct svc_req *)) delete_1_svc;
+		local = (bool_t (*) (char *, void *,  struct svc_req *))delete_1_svc;
 		break;
 
 	default:
@@ -60,15 +79,38 @@ keyval_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
 		svcerr_decode (transp);
 		return;
 	}
-	result = (*local)((char *)&argument, rqstp);
-	if (result != NULL && !svc_sendreply(transp, (xdrproc_t) _xdr_result, result)) {
+	retval = (bool_t) (*local)((char *)&argument, (void *)&result, rqstp);
+	if (retval > 0 && !svc_sendreply(transp, (xdrproc_t) _xdr_result, (char *)&result)) {
 		svcerr_systemerr (transp);
 	}
 	if (!svc_freeargs (transp, (xdrproc_t) _xdr_argument, (caddr_t) &argument)) {
 		fprintf (stderr, "%s", "unable to free arguments");
 		exit (1);
 	}
+	if (!keyval_prog_1_freeresult (transp, _xdr_result, (caddr_t) &result))
+		fprintf (stderr, "%s", "unable to free results");
+
 	return;
+}
+
+
+/*
+	New code for procedure keyval_prog_1, starting thread in response for each clients
+	request to invoke remote procedure.
+ */
+
+static void
+keyval_prog_1(struct svc_req *rqstp, register SVCXPRT *transp)
+{
+	struct data_str
+	{
+					struct svc_req *rqstp;
+					SVCXPRT *transp;
+	} *data_ptr = (struct data_str *)malloc(sizeof(struct data_str));
+	data_ptr->rqstp = rqstp;
+	data_ptr->transp = transp;
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+	pthread_create(&p_thread, &attr, serv_request, (void *)data_ptr);
 }
 
 int

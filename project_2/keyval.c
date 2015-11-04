@@ -66,12 +66,12 @@ char *_GET(int key){
 			return dict[key];
 		}
 		else{
-//			printf("Value does not exist\n");
+			printf("Value does not exist\n");
 			return "Invalid Key";
 		}
 	}
 	else{
-//		printf("Invalid Key\n");
+		printf("Invalid Key\n");
 		return "Invalid Key";
 	}	
 }

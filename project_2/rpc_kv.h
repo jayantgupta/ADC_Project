@@ -8,6 +8,7 @@
 
 #include <rpc/rpc.h>
 
+#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,26 +26,26 @@ typedef struct row row;
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define PUT 1
-extern  bool_t * put_1(row *, CLIENT *);
-extern  bool_t * put_1_svc(row *, struct svc_req *);
+extern  enum clnt_stat put_1(row *, bool_t *, CLIENT *);
+extern  bool_t put_1_svc(row *, bool_t *, struct svc_req *);
 #define GET 2
-extern  char ** get_1(int *, CLIENT *);
-extern  char ** get_1_svc(int *, struct svc_req *);
+extern  enum clnt_stat get_1(int *, char **, CLIENT *);
+extern  bool_t get_1_svc(int *, char **, struct svc_req *);
 #define DELETE 3
-extern  bool_t * delete_1(int *, CLIENT *);
-extern  bool_t * delete_1_svc(int *, struct svc_req *);
+extern  enum clnt_stat delete_1(int *, bool_t *, CLIENT *);
+extern  bool_t delete_1_svc(int *, bool_t *, struct svc_req *);
 extern int keyval_prog_1_freeresult (SVCXPRT *, xdrproc_t, caddr_t);
 
 #else /* K&R C */
 #define PUT 1
-extern  bool_t * put_1();
-extern  bool_t * put_1_svc();
+extern  enum clnt_stat put_1();
+extern  bool_t put_1_svc();
 #define GET 2
-extern  char ** get_1();
-extern  char ** get_1_svc();
+extern  enum clnt_stat get_1();
+extern  bool_t get_1_svc();
 #define DELETE 3
-extern  bool_t * delete_1();
-extern  bool_t * delete_1_svc();
+extern  enum clnt_stat delete_1();
+extern  bool_t delete_1_svc();
 extern int keyval_prog_1_freeresult ();
 #endif /* K&R C */
 

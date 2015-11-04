@@ -9,47 +9,29 @@
 /* Default timeout can be changed using clnt_control() */
 static struct timeval TIMEOUT = { 25, 0 };
 
-bool_t *
-put_1(row *argp, CLIENT *clnt)
+enum clnt_stat 
+put_1(row *argp, bool_t *clnt_res, CLIENT *clnt)
 {
-	static bool_t clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call (clnt, PUT,
+	return (clnt_call(clnt, PUT,
 		(xdrproc_t) xdr_row, (caddr_t) argp,
-		(xdrproc_t) xdr_bool, (caddr_t) &clnt_res,
-		TIMEOUT) != RPC_SUCCESS) {
-		return (NULL);
-	}
-	return (&clnt_res);
+		(xdrproc_t) xdr_bool, (caddr_t) clnt_res,
+		TIMEOUT));
 }
 
-char **
-get_1(int *argp, CLIENT *clnt)
+enum clnt_stat 
+get_1(int *argp, char **clnt_res, CLIENT *clnt)
 {
-	static char *clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call (clnt, GET,
+	return (clnt_call(clnt, GET,
 		(xdrproc_t) xdr_int, (caddr_t) argp,
-		(xdrproc_t) xdr_wrapstring, (caddr_t) &clnt_res,
-		TIMEOUT) != RPC_SUCCESS) {
-		return (NULL);
-	}
-	return (&clnt_res);
+		(xdrproc_t) xdr_wrapstring, (caddr_t) clnt_res,
+		TIMEOUT));
 }
 
-bool_t *
-delete_1(int *argp, CLIENT *clnt)
+enum clnt_stat 
+delete_1(int *argp, bool_t *clnt_res, CLIENT *clnt)
 {
-	static bool_t clnt_res;
-
-	memset((char *)&clnt_res, 0, sizeof(clnt_res));
-	if (clnt_call (clnt, DELETE,
+	return (clnt_call(clnt, DELETE,
 		(xdrproc_t) xdr_int, (caddr_t) argp,
-		(xdrproc_t) xdr_bool, (caddr_t) &clnt_res,
-		TIMEOUT) != RPC_SUCCESS) {
-		return (NULL);
-	}
-	return (&clnt_res);
+		(xdrproc_t) xdr_bool, (caddr_t) clnt_res,
+		TIMEOUT));
 }
