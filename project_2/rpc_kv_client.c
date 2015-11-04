@@ -63,6 +63,7 @@ keyval_prog_1(char *host)
 									}
 					}
 					else if(strcmp(tokens[0], "GET")== 0){
+									result_2 = (char *)malloc(sizeof(char)*26);
 									get_1_arg = atoi(tokens[1]);
 									retval_2 = get_1(&get_1_arg, &result_2, clnt);
 									if (retval_2 != RPC_SUCCESS) {
