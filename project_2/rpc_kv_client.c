@@ -31,8 +31,9 @@ keyval_prog_1(char *host)
 
 			while(true){
 					char cmd[50];
-					printf("Enter Command\nGET:<key>\nPUT:<key>:<value>\nDELETE:<key>\n");
+					printf("Enter Command\n-------\nGET:<key>\nPUT:<key>:<value>\nDELETE:<key>\n------\n");
 					scanf("%s",cmd);
+					printf("-------\n");
 					char tokens [3][26];
 					char *delim = ":";
 					char *token;

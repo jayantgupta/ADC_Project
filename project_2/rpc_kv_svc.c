@@ -93,7 +93,6 @@ serv_request(void *data)
 	return;
 }
 
-
 /*
 	New code for procedure keyval_prog_1, starting thread in response for each clients
 	request to invoke remote procedure.
