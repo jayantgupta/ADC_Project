@@ -4,8 +4,6 @@
  * as a guideline for developing your own functions.
  */
 
-/* TODO : Add Locks */
-
 #include "rpc_kv.h"
 #include "keyval.h"
 #include<unistd.h>
@@ -20,55 +18,32 @@ bool writeLock = false;
 bool_t
 put_1_svc(row *argp, bool_t *result, struct svc_req *rqstp)
 {
-//	printf("#readers:%d ; readLock:%d ; writeLock:%d\n",readers, readLock, writeLock);
-//	while(readLock || writeLock){
-//			// spin
-//	}
-	
-//writeLock = true; // Acquire Lock
 	pthread_mutex_lock(&lock);
 	printf("Inside PUT Request\n");
 	*result = _PUT(argp->key, argp->value);
-	sleep(2);
 	pthread_mutex_unlock(&lock);
-//	writeLock = false; // Release lock
 	return(TRUE);
 }
 
 bool_t
 get_1_svc(int *argp, char **result, struct svc_req *rqstp)
 {
-//	while(writeLock){
-			// spin
-//	}
-//	readLock = true; // Acquire Lock
-//	readers++;
 	pthread_mutex_lock(&lock);
 	printf("Inside GET Request\n");
 	*result = (char *)malloc(sizeof(char)*26);
 	strcpy(*result, _GET(*argp));
-	sleep(2);
 	pthread_mutex_unlock(&lock);
-//	printf("#readers:%d ; readLock:%d ; writeLock:%d\n",readers, readLock, writeLock);
-//	readers--;
-//	if(readers == 0)readLock = false;
 	return(TRUE);
 }
 
 bool_t
 delete_1_svc(int *argp, bool_t *result, struct svc_req *rqstp)
 {
-/*	printf("#readers:%d ; readLock:%d ; writeLock:%d\n",readers, readLock, writeLock);
-	while(readLock || writeLock){
-			// spin
-	}
 	writeLock = true;  // Acquire Lock */
 	pthread_mutex_lock(&lock);
 	printf("Inside DELETE request\n");
 	*result = _DELETE(*argp);
-	sleep(2);
 	pthread_mutex_unlock(&lock);
-//	writeLock = false; // Release Lock
 	return(TRUE);
 }
 

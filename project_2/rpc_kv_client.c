@@ -7,6 +7,43 @@
 #include "rpc_kv.h"
 #include<stdbool.h>
 
+void init_keyval_store(CLIENT *clnt){
+/* initializing the key value store */
+
+				printf("Initializing key-value store\n");
+				char *INIT[7] = {"0:Monday", "1:Tuesday", "2:Wednesday", "3:Thursday", "4:Friday", "5:Saturday",  "6:Sunday"};
+				int j;
+				for(j = 0 ; j < 7 ; j++){
+								bool_t result_1;
+								enum clnt_stat retval_1;
+								row  put_1_arg;
+								char buff[80];
+								strcpy (buff, INIT[j]);
+								const char *delimiter = ":";
+								char *argarray = strtok(buff, delimiter);
+								int counttoken = 0;
+								char arg[3][25];
+								while(argarray != NULL){
+												strcpy(arg[counttoken], argarray);
+												counttoken += 1;
+												argarray = strtok(NULL, delimiter);
+
+								}
+								put_1_arg.key = atoi(arg[0]);
+								strcpy(put_1_arg.value, arg[1]);
+								put_1(&put_1_arg, &result_1, clnt);//call put to initialize key-value store
+								if (retval_1 != RPC_SUCCESS) {
+												clnt_perror (clnt, "call failed");
+								}
+								if(result_1 == TRUE){
+												printf("PUT SUCCESS\n");
+								}else{
+												printf("PUT FAILED\n");
+								}
+				}
+				printf("key-value store initialized\n");
+}
+
 void
 keyval_prog_1(char *host)
 {
@@ -28,7 +65,7 @@ keyval_prog_1(char *host)
 									exit (1);
 					}
 #endif	/* DEBUG */
-
+			init_keyval_store(clnt);
 			while(true){
 					char cmd[50];
 					printf("Enter Command\n-------\nGET:<key>\nPUT:<key>:<value>\nDELETE:<key>\n------\n");
