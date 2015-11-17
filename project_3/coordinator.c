@@ -66,14 +66,40 @@ void *two_pc_protocol(void *addr){
 //        callLog("Failed to connect socket to the address of the server\n", log_filename);
         exit(1);
     }
+                  /* Create Time out values */
+
+                 tv.tv_sec = 2 ;
+                 tv.tv_usec = 0;
+                 FD_ZERO(&myset);
+                 FD_SET(sockfd, &myset);
+
+
 
 		/* Get message to send to the server */
 		int send_count = 1;
 		int status ;
 		/* send message to the server */
 		send(sockfd, request, strlen(request), 0);
-		recv_bytes = recv(sockfd, recv_buff, 1024, 0);
-		printf("%s--%s-- ", port, recv_buff);
+                /* Adding Timeout */
+                while((status=select(sockfd + 1, &myset, NULL, NULL, &tv)) <= 0 && send_count < 5){
+
+                  send(sockfd, request, strlen(request), 0);
+                  printf("Re-sending Request to Server %d time\n",send_count);
+                  send_count++;
+               }
+               if(status > 0){
+
+                recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+                printf("%s--%s-- ", port, recv_buff);
+       
+                }
+
+               else if(status <= 0 && send_count == 5){
+
+                   printf("Resend failed\n");
+
+                  }
+		
 		if(strcmp(recv_buff, "ACK") == 0){
 			get_and_add_ack();
 			printf("Here\n");
@@ -83,8 +109,26 @@ void *two_pc_protocol(void *addr){
 			//spin;
 		}
 		printf("%s : %d\n", port, ack_count);
-		send(sockfd, "GO", strlen("GO"), 0);
-		recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+               send(sockfd, "GO", strlen("GO"), 0);
+               /* Adding Timeout */
+                while((status=select(sockfd + 1, &myset, NULL, NULL, &tv)) <= 0 && send_count < 5){
+
+                 send(sockfd, "GO", strlen("GO"), 0);
+                  printf("Re-sending Request to Server %d time\n",send_count);
+                  send_count++;
+               }
+               if(status > 0){
+
+               recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+       
+                }
+
+               else if(status <= 0 && send_count == 5){
+
+                   printf("Resend failed\n");
+
+                  }		
+		
 		if(strcmp(recv_buff,"ACK") == 0){
 			printf("Now Here\n");
 			get_and_add_go_ack();
