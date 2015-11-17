@@ -95,12 +95,14 @@ void *two_pc_protocol(void *addr){
 		printf("%s : %d\n", port, go_ack_count);
 		close(sockfd);
 		pthread_exit(0);
-		return ;
+		return NULL ;
 }
 
 // Coordinator.
 // This will be called by rpc_kev_server
-bool run(char request[1024]){
+// bool run(char request[1024]){
+int main(int argc, char *argv[]){
+		char request[1024] = "PUT:0:TEST";
 		printf("%s\n", request);
 		int *status[count];
 		pthread_attr_t attr;
