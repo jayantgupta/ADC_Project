@@ -27,7 +27,7 @@ LDLIBS += -lnsl -lpthread
 
 # Targets 
 
-all : $(CLIENT) $(SERVER) my_clean 2pc_server coordinator
+all : $(CLIENT) $(SERVER) 2pc_server my_clean
 
 $(TARGETS) : $(SOURCES.x) 
 	rpcgen $(RPCGENFLAGS) $(SOURCES.x)
@@ -39,11 +39,11 @@ $(OBJECTS_SVC) : $(SOURCES_SVC.c) $(SOURCES_SVC.h) $(TARGETS_SVC.c)
 $(CLIENT) : $(OBJECTS_CLNT) 
 	$(LINK.c) -o $(CLIENT) $(OBJECTS_CLNT) $(LDLIBS) 
 
-$(SERVER) : $(OBJECTS_SVC) keyval.o
-	$(LINK.c) -o $(SERVER) $(OBJECTS_SVC) $(LDLIBS) keyval.o
+$(SERVER) : $(OBJECTS_SVC) coordinator.o keyval.o
+	$(LINK.c) -o $(SERVER) $(OBJECTS_SVC) coordinator.o keyval.o $(LDLIBS)
 
 2pc_server : 2pc_server.o keyval.o
-	$(LINK.c) -o 2pc_server.o keyval.o 
+	$(LINK.c) -o 2pc_server 2pc_server.o keyval.o 
 
 keyval.o : keyval.c
 	$(LINK.c) -c keyval.c
@@ -51,12 +51,8 @@ keyval.o : keyval.c
 2pc_server.o : 2pc_server.c
 	$(LINK.c) -c 2pc_server.c
 
-coordinator : coordinator.c
-	$(LINK.c) -o coordinator coordinator.c -lpthread
+coordinator.o : coordinator.c
+	$(LINK.c) -c coordinator.c
 
 my_clean:
 	rm *.o
-
-
-#clean:
-#	 $(RM) core $(TARGETS) $(OBJECTS_CLNT) $(OBJECTS_SVC) $(CLIENT) $(SERVER)

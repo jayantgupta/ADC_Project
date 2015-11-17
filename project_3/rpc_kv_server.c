@@ -1,11 +1,11 @@
 /*
 	Name : Jayant Gupta
 	Date : November 13, 2015
-
 */
 
 #include "rpc_kv.h"
 #include "keyval.h"
+#include "coordinator.h"
 #include <unistd.h>
 #include <pthread.h>
 
@@ -19,12 +19,17 @@ bool_t
 put_1_svc(row *argp, bool_t *result, struct svc_req *rqstp)
 {
 	char request[1024]="";
+	char key[20];
+	sprintf(key, "%d", argp->key);
+	writeLock = true;  // Acquire Lock */
 	pthread_mutex_lock(&lock);
 	printf("Lock Acquired\n");
-	printf("Inside PUT Request\n");
-	//*result = _PUT(argp->key, argp->value);
-	strcat(request, "PUT:"); 	strcat(request, argp->key);
-	strcat(request, ":"); strcat(request, argp->value);
+	printf("Inside PUT request\n");
+	strcat(request, "PUT:"); 
+//	sprintf(key, "%d", *argp);
+	strcat(request, key);
+	strcat(request, ":");
+	strcat(request, argp->value);
 	*result = run(request);
 	printf("Lock Released\n");
 	pthread_mutex_unlock(&lock);
@@ -48,13 +53,15 @@ bool_t
 delete_1_svc(int *argp, bool_t *result, struct svc_req *rqstp)
 {
 	char request[1024]="";
-	char key[10];
+	char key[20];
 	sprintf(key, "%d", *argp);
 	writeLock = true;  // Acquire Lock */
 	pthread_mutex_lock(&lock);
 	printf("Lock Acquired\n");
 	printf("Inside DELETE request\n");
-	strcat(request, "DELETE:"); strcat(request, key);
+	strcat(request, "DELETE:"); 
+	sprintf(key, "%d", *argp);
+	strcat(request, key);
 	*result = run(request);
 	printf("Lock Released\n");
 	pthread_mutex_unlock(&lock);

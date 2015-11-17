@@ -1,9 +1,7 @@
 /*
 	Name : Jayant Gupta
 	Date : November 13, 2015
-
 */
-
 
 #include "rpc_kv.h"
 #include "keyval.h"

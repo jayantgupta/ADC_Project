@@ -1,5 +1,5 @@
 /*
-	 tcpclient.c 
+	tcpclient.c 
 	TOADD : Timeout.
 	Initial version by Alaka Sukumar
 	Edited by Jayant Gupta to serve
@@ -8,20 +8,7 @@
 	for Commits to all the servers, including itself.
 	Date. Nov 13, 2015.
 */
-//#include "logfile.h"
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <sys/select.h>
-#include <pthread.h>
-
+#include "coordinator.h"
 
 int ack_count;
 int go_ack_count;
@@ -146,6 +133,6 @@ bool run(char request[1024]){
 		for(i = 0 ; i < count ; i++){
 			pthread_join(thread_array[i], (void **) &(status[i]));
 		}
-    pthread_exit(0);
+//    pthread_exit(0);
 		return true;
 }

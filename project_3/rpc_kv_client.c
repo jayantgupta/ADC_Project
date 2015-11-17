@@ -69,11 +69,11 @@ keyval_prog_1(char *host, char *client_id)
 			int ID = atoi(client_id);
 			if(ID == 0){
 				char *INIT[7] = {"0:Monday_0", "1:Tuesday_0", "2:Wednesday_0", "3:Thursday_0", "4:Friday_0", "5:Saturday_0",  "6:Sunday_0"};
-				init_keyval_store(clnt, INIT);
+//				init_keyval_store(clnt, INIT);
 			}
 			if(ID == 1){
 				char *INIT[7] = {"0:Monday_1", "1:Tuesday_1", "2:Wednesday_1", "3:Thursday_1", "4:Friday_1", "5:Saturday_1",  "6:Sunday_1"};
-				init_keyval_store(clnt, INIT);
+//				init_keyval_store(clnt, INIT);
 			}
 			while(true){
 					char cmd[50];

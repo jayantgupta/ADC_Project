@@ -7,8 +7,8 @@
 
 #include "keyval.h"
 /* Data Structures*/
-char dict[100000][25]; // Data Structure storing the dictionary.
-bool flag[100000]={0};
+static char dict[100000][25]; // Data Structure storing the dictionary.
+static bool flag[100000]={0};
 
 /* Functions*/
 void init_dict(const char *file_name);
@@ -43,6 +43,7 @@ void init_dict(const char *file_name){
 }
 
 bool _PUT(int key, char *value){
+	printf("Inside _PUT\n");
 	if(key >= 0 && key < 100000 ){
 		if(flag[key]){
 			printf("Key exists\n");
@@ -53,13 +54,14 @@ bool _PUT(int key, char *value){
 			strcpy(dict[key],value);
 			flag[key] = true;
 			printf("%s\n",dict[key]);
+			printf("KEYVAL:: %d:%s\n", key, _GET(key));
 			return true;
 		}
 	}
 	else{
 		printf("Invalid Key\n");
 		return false;
-	}	
+	}
 }
 
 char *_GET(int key){
@@ -81,6 +83,7 @@ char *_GET(int key){
 bool _DELETE(int key){
 	if(key >= 0 && key < 100000 ){
 		if(flag[key]){
+			printf("_DELETING %d %s\n", key, dict[key]);
 			flag[key] = false;
 			return true;
 		}

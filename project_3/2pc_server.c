@@ -6,7 +6,6 @@
 */
 
 #include "keyval.h"
-//#include "logfile.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -14,9 +13,9 @@
 #include <unistd.h>
 #include <errno.h>
 
+char *exec_rqst(char *);
+
 int main(int argc, char *argv[]){
-	// localhost 10001
-	// localhost 10000
 	if(argc != 2){
 		printf("Error\nUsage ./2pc_server.exec port\n");
 		exit(1);
@@ -79,7 +78,7 @@ int main(int argc, char *argv[]){
 		recv_buff[recv_bytes] = '\0'; // Wait for the final go. TODO add timeout.
 		send(newsock, "ACK", strlen("ACK"), 0);
 		if(strcmp(recv_buff, "GO") == 0){
-			//exec_request(request); // Execute the request.
+			exec_rqst(request); // Execute the request.
 			printf("Request : %s\n", request);
 		}
 		close(newsock);
@@ -90,37 +89,40 @@ int main(int argc, char *argv[]){
 
 // Takes the first request and responds as ACK.
 // Assuming all the errors are checked at the coordinator-server
-char * exec_request(char * request){
-		char recv_buff[1024];
+char * exec_rqst(char * request){
+		printf("request : %s\n", request);
 		/* code to validate the request*/
 		const char s[2] = ":";
 		char *token;
 		/* get the first token */
-		token = strtok(recv_buff, s);            
-		char * allTokens[3];             
+		token = strtok(request, s);            
+		char allTokens[3][26];             
 		int i = 0;
 		while( token != NULL && i < 3)   
-		{  
-						allTokens[i] = token;
+		{ 
+					 printf("%s\n", token);	
+						strcpy(allTokens[i],token);
 						token = strtok(NULL, s);
 						i++;
 		}
 		if(strcmp(allTokens[0],"PUT") == 0){
-//						callLog("Called method PUT \n", log_filename);
+//					callLog("Called method PUT \n", log_filename);
+						printf("Inside PUT %s %s\n", allTokens[1], allTokens[2]);
 						bool putValue = _PUT(atoi(allTokens[1]), allTokens[2]); 
 						if(putValue){
-//										callLog("Successfully Updated\n", log_filename);
+//							callLog("Successfully Updated\n", log_filename);
 								return "COMMIT";
 						}
 
 						else{
-//										callLog("Error in updating \n", log_filename);
+//						callLog("Error in updating \n", log_filename);
 							return "PUT_ERROR";
 						}
 
 		}
 		else if(strcmp(allTokens[0],"DELETE") == 0){
-//						callLog("Called method DELETE \n", log_filename);
+//					callLog("Called method DELETE \n", log_filename);
+						printf("Inside DELETE\n");
 						bool delValue = _DELETE(atoi(allTokens[1]));
 						if(delValue){
 //							callLog("Successfully Deleted \n", log_filename);
