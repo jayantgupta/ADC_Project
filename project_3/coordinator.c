@@ -32,11 +32,13 @@ void *two_pc_protocol(void *addr){
 			char *IP;
 			char *port;
 			char rqst[1024];
+			bool read_flag;
 		}* t_addr;
 		t_addr = (struct host_addr *)addr;
 		char *IP = t_addr->IP;
 		char *port = t_addr->port;
 		char *request = t_addr->rqst;
+		bool read_flag = t_addr->read_flag;
 		printf("Connect to %s %s with request %s\n", IP, port, request);
 
     int sockfd, recv_bytes;
@@ -79,7 +81,7 @@ void *two_pc_protocol(void *addr){
 			printf("Here\n");
 		}
 		printf("%s : %d\n", port, ack_count);
-		while(ack_count < count){
+		while(ack_count < count && !read_flag){
 			//spin;
 		}
 		printf("%s : %d\n", port, ack_count);
@@ -89,7 +91,7 @@ void *two_pc_protocol(void *addr){
 			printf("Now Here\n");
 			get_and_add_go_ack();
 		}
-		while(go_ack_count < count){
+		while(go_ack_count < count && !read_flag){
 			//spin
 		}
 		printf("%s : %d\n", port, go_ack_count);
@@ -100,9 +102,9 @@ void *two_pc_protocol(void *addr){
 
 // Coordinator.
 // This will be called by rpc_kev_server
-// bool run(char request[1024]){
-int main(int argc, char *argv[]){
-		char request[1024] = "PUT:0:TEST";
+	bool run(char request[1024], bool read_flag){
+//  int main(int argc, char *argv[]){
+//	char request[1024] = "PUT:0:TEST";
 		printf("%s\n", request);
 		int *status[count];
 		pthread_attr_t attr;
@@ -117,6 +119,7 @@ int main(int argc, char *argv[]){
 				char *IP;
 				char *port;
 				char rqst[1024];
+				bool read_flag;
 		};
 		struct host_addr **addr = (struct host_addr **)malloc(sizeof(struct host_addr*)*count);
 		pthread_t thread_array[count];
@@ -126,14 +129,17 @@ int main(int argc, char *argv[]){
 			addr[i] = (struct host_addr *)malloc(sizeof(struct host_addr));
 			addr[i] -> IP = ip[i];
 			addr[i] -> port = ports[i];
+			addr[i] -> read_flag = read_flag;
 			strcpy(addr[i] -> rqst,  request);
 			if((ret = pthread_create(&thread_array[i], NULL, two_pc_protocol, (void *)addr[i])) == -1){
 				printf("Thread creation failed with return code: %d", ret);
 				exit(ret);
 			}
+			if(read_flag)break; // Query once for the read request.
 		}
 		for(i = 0 ; i < count ; i++){
 			pthread_join(thread_array[i], (void **) &(status[i]));
+			if(read_flag)break; // Query once for the read request
 		}
 //    pthread_exit(0);
 		return true;

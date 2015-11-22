@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+const char *GET_FILE = "GET_buffer";
 char *exec_rqst(char *);
 
 int main(int argc, char *argv[]){
@@ -90,7 +91,7 @@ int main(int argc, char *argv[]){
 // Takes the first request and responds as ACK.
 // Assuming all the errors are checked at the coordinator-server
 char * exec_rqst(char * request){
-		printf("request : %s\n", request);
+		printf("Executing Request : %s\n", request);
 		/* code to validate the request*/
 		const char s[2] = ":";
 		char *token;
@@ -105,7 +106,17 @@ char * exec_rqst(char * request){
 						token = strtok(NULL, s);
 						i++;
 		}
-		if(strcmp(allTokens[0],"PUT") == 0){
+		if(strcmp(allTokens[0],"GET") == 0){ 
+//					callLog("Called method GET \n", log_filename);
+						printf("Called method GET\n");
+						int key = atoi(allTokens[1]);
+						char *getValue = _GET(key);
+//					send(newsock, getValue, strlen(getValue), 0);    
+						FILE *fp = fopen(GET_FILE, "w");
+						fputs(getValue, fp);
+						fclose(fp);
+		} 
+		else if(strcmp(allTokens[0],"PUT") == 0){
 //					callLog("Called method PUT \n", log_filename);
 						printf("Inside PUT %s %s\n", allTokens[1], allTokens[2]);
 						bool putValue = _PUT(atoi(allTokens[1]), allTokens[2]); 

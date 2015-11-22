@@ -17,5 +17,5 @@
 void get_and_add_ack();
 void get_and_add_go_ack();
 void *two_pc_protocol(void *addr);
-bool run(char request[1024]);
+bool run(char request[1024], bool read_flag);
 #endif
