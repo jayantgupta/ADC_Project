@@ -32,11 +32,9 @@ int main(int argc, char *argv[]){
 	int sin_size;
   const char *log_filename = "tcp_server.log";
 
-        fd_set myset;
-        struct timeval tv;
-
-
-       
+	fd_set myset;
+	struct timeval tv;
+	
 	/* creating a socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
@@ -65,20 +63,14 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-         /* Creating Time out values */
+	/* Creating Time out values */
+	tv.tv_sec = 0;  // seconds
+	tv.tv_usec = 10000; // microseconds
+	FD_ZERO(&myset);
+	FD_SET(sockfd, &myset);
 
-        tv.tv_sec = 2;  // seconds
-
-        tv.tv_usec = 0; // microseconds
-
-        FD_ZERO(&myset);
-
-        FD_SET(sockfd, &myset);
-
-
-        /* logging server listening */
+	/* logging server listening */
   printf("Server Listening ..\n");
-//	callLog("Server listening \n", log_filename);
 	fflush(stdout);
 	while(1){
 		char send_buff [1024] , recv_buff[1024], request[1024];
@@ -94,21 +86,10 @@ int main(int argc, char *argv[]){
 		printf("%s\n", recv_buff);
 		strcpy(request, recv_buff); // Store request to be processed later.
 		send(newsock, "ACK", strlen("ACK"), 0);	// Send back the Acknowledgement.
-                   /* Adding timeout */
-                while((status=select(sockfd + 1, &myset, NULL, NULL, &tv)) <= 0 && send_count < 5){
-               send(newsock, "ACK", strlen("ACK"), 0);
-                printf("Re-sending ACK to coordinator %d time\n",send_count);
-               send_count++;
-               }
-                if(status > 0){
-                recv_bytes = recv(newsock, recv_buff, 1024, 0);
-                recv_buff[recv_bytes] = '\0'; // Wait for the final go. TODO add timeout.
-                }               
-               else if(status <= 0 && send_count == 5){
-               printf("Resend failed\n");
+		/* Adding timeout */
+		recv_bytes = recv(newsock, recv_buff, 1024, 0);
+		recv_buff[recv_bytes] = '\0'; // Wait for the final go. 
 
-                }
-		
 		send(newsock, "ACK", strlen("ACK"), 0);
 		if(strcmp(recv_buff, "GO") == 0){
 			exec_rqst(request); // Execute the request.
@@ -164,15 +145,12 @@ char * exec_rqst(char * request){
 
 		}
 		else if(strcmp(allTokens[0],"DELETE") == 0){
-//					callLog("Called method DELETE \n", log_filename);
 						printf("Inside DELETE\n");
 						bool delValue = _DELETE(atoi(allTokens[1]));
 						if(delValue){
-//							callLog("Successfully Deleted \n", log_filename);
 							return "COMMIT";
 						}
 						else{
-//							callLog("Error in Deleting \n", log_filename);
 							return "DELETE_ERROR";
 						}                
 		}

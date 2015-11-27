@@ -13,7 +13,7 @@
 int ack_count;
 int go_ack_count;
 pthread_mutex_t thread_lock;
-const int count = 2;
+const int count = 2; // Number of nodes.
 
 void get_and_add_ack(){
 			pthread_mutex_lock(&thread_lock);
@@ -65,72 +65,35 @@ void *two_pc_protocol(void *addr){
     {
         perror("Failed to connect");
 				printf("connection failed\n");
-//        callLog("Failed to connect socket to the address of the server\n", log_filename);
         exit(1);
     }
-                  /* Create Time out values */
+		/* Create Time out values */
 
-                 tv.tv_sec = 2 ;
-                 tv.tv_usec = 0;
-                 FD_ZERO(&myset);
-                 FD_SET(sockfd, &myset);
-
-
+		tv.tv_sec = 0 ;
+		tv.tv_usec = 10000;
+		FD_ZERO(&myset);
+		FD_SET(sockfd, &myset);
 
 		/* Get message to send to the server */
 		int send_count = 1;
 		int status ;
 		/* send message to the server */
 		send(sockfd, request, strlen(request), 0);
-                /* Adding Timeout */
-                while((status=select(sockfd + 1, &myset, NULL, NULL, &tv)) <= 0 && send_count < 5){
-
-                  send(sockfd, request, strlen(request), 0);
-                  printf("Re-sending Request to Server %d time\n",send_count);
-                  send_count++;
-               }
-               if(status > 0){
-
-                recv_bytes = recv(sockfd, recv_buff, 1024, 0);
-                printf("%s--%s-- ", port, recv_buff);
-       
-                }
-
-               else if(status <= 0 && send_count == 5){
-
-                   printf("Resend failed\n");
-
-                  }
-		
+		/* Adding Timeout */
+		recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+		printf("%s--%s-- ", port, recv_buff);
 		if(strcmp(recv_buff, "ACK") == 0){
-			get_and_add_ack();
-			printf("Here\n");
+						get_and_add_ack();
+						printf("Here\n");
 		}
 		printf("%s : %d\n", port, ack_count);
 		while(ack_count < count && !read_flag){
 			//spin;
 		}
 		printf("%s : %d\n", port, ack_count);
-               send(sockfd, "GO", strlen("GO"), 0);
-               /* Adding Timeout */
-                while((status=select(sockfd + 1, &myset, NULL, NULL, &tv)) <= 0 && send_count < 5){
-
-                 send(sockfd, "GO", strlen("GO"), 0);
-                  printf("Re-sending Request to Server %d time\n",send_count);
-                  send_count++;
-               }
-               if(status > 0){
-
-               recv_bytes = recv(sockfd, recv_buff, 1024, 0);
-       
-                }
-
-               else if(status <= 0 && send_count == 5){
-
-                   printf("Resend failed\n");
-
-                  }		
-		
+		send(sockfd, "GO", strlen("GO"), 0);
+		/* Adding Timeout */
+		recv_bytes = recv(sockfd, recv_buff, 1024, 0);
 		if(strcmp(recv_buff,"ACK") == 0){
 			printf("Now Here\n");
 			get_and_add_go_ack();
@@ -147,8 +110,6 @@ void *two_pc_protocol(void *addr){
 // Coordinator.
 // This will be called by rpc_kev_server
 	bool run(char request[1024], bool read_flag){
-//  int main(int argc, char *argv[]){
-//	char request[1024] = "PUT:0:TEST";
 		printf("%s\n", request);
 		int *status[count];
 		pthread_attr_t attr;
@@ -156,6 +117,8 @@ void *two_pc_protocol(void *addr){
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 		printf("%s\n", request);
 		int i, ret; // Count of Peers.
+//		char *ip[] = {"n01", "n02", "n03", "n04", "n05", "n06", "n07", "n08", "n09"}; // add ip here.
+//		char *ports[] = {"10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000"};  // add ports here.
 		char *ip[] = {"localhost", "localhost"}; // add ip here.
 		char *ports[] = {"10000", "10001"};  // add ports here.
 		struct host_addr

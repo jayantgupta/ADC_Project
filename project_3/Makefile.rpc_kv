@@ -26,8 +26,8 @@ LDLIBS += -lnsl -lpthread
 
 all : $(CLIENT) $(SERVER) 2pc_server my_clean
 
-$(TARGETS) : $(SOURCES.x) 
-	rpcgen $(RPCGENFLAGS) $(SOURCES.x)
+#$(TARGETS) : $(SOURCES.x) 
+#	rpcgen $(RPCGENFLAGS) $(SOURCES.x)
 
 $(OBJECTS_CLNT) : $(SOURCES_CLNT.c) $(SOURCES_CLNT.h) $(TARGETS_CLNT.c) 
 

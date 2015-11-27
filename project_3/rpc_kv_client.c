@@ -45,7 +45,7 @@ void init_keyval_store(CLIENT *clnt, char **INIT){
 }
 
 void
-keyval_prog_1(char *host, char *client_id)
+keyval_prog_1(char *host)
 {
 				CLIENT *clnt;
 				enum clnt_stat retval_1;
@@ -66,15 +66,8 @@ keyval_prog_1(char *host, char *client_id)
 					}
 #endif	/* DEBUG */
 			
-			int ID = atoi(client_id);
-			if(ID == 0){
-				char *INIT[7] = {"0:Monday_0", "1:Tuesday_0", "2:Wednesday_0", "3:Thursday_0", "4:Friday_0", "5:Saturday_0",  "6:Sunday_0"};
-//				init_keyval_store(clnt, INIT);
-			}
-			if(ID == 1){
-				char *INIT[7] = {"0:Monday_1", "1:Tuesday_1", "2:Wednesday_1", "3:Thursday_1", "4:Friday_1", "5:Saturday_1",  "6:Sunday_1"};
-//				init_keyval_store(clnt, INIT);
-			}
+			char *INIT[7] = {"0:Monday", "1:Tuesday", "2:Wednesday", "3:Thursday", "4:Friday", "5:Saturday",  "6:Sunday"};
+			init_keyval_store(clnt, INIT);
 			while(true){
 					char cmd[50];
 					printf("Enter Command\n-------\nGET:<key>\nPUT:<key>:<value>\nDELETE:<key>\n------\n");
@@ -146,12 +139,11 @@ main (int argc, char *argv[])
 	char *host;
 	char *client_id;
 
-	if (argc != 3) {
-		printf ("usage: %s server_host\n Client_ID", argv[0]);
+	if (argc != 2) {
+		printf ("usage: %s server_host\n", argv[0]);
 		exit (1);
 	}
 	host = argv[1];
-	client_id = argv[2];
-	keyval_prog_1 (host, client_id);
+	keyval_prog_1 (host);
 exit (0);
 }
