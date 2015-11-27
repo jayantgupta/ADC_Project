@@ -117,10 +117,10 @@ void *two_pc_protocol(void *addr){
 		pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 		printf("%s\n", request);
 		int i, ret; // Count of Peers.
-//		char *ip[] = {"n01", "n02", "n03", "n04", "n05", "n06", "n07", "n08", "n09"}; // add ip here.
-//		char *ports[] = {"10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000"};  // add ports here.
-		char *ip[] = {"localhost", "localhost"}; // add ip here.
-		char *ports[] = {"10000", "10001"};  // add ports here.
+		char *ip[] = {"n01", "n02", "n03", "n04", "n05", "n06", "n07", "n08", "n09"}; // add ip here.
+		char *ports[] = {"10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000"};  // add ports here.
+//		char *ip[] = {"localhost", "localhost"}; // add ip here.
+//		char *ports[] = {"10000", "10001"};  // add ports here.
 		struct host_addr
 		{
 				char *IP;
