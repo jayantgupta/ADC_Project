@@ -14,3 +14,6 @@ project_2/rpc_kv_server
 project_3/2pc_server
 project_3/rpc_kv_client
 project_3/rpc_kv_server
+project_4/2pc_server
+project_4/rpc_kv_client
+project_4/rpc_kv_server
