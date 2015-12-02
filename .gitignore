@@ -8,5 +8,9 @@
 *.docx#
 *.pdf
 *.txt
+*.tar.gz
 project_2/rpc_kv_client
 project_2/rpc_kv_server
+project_3/2pc_server
+project_3/rpc_kv_client
+project_3/rpc_kv_server
