@@ -160,7 +160,7 @@ int main(int argc, char *argv[]){
                 recv_bytes = recv(newsock, recv_buff, 1024, 0);
 		recv_buff[recv_bytes] = '\0'; 
 		
-			exec_rqst(request); // Execute the request.
+			exec_rqst(recv_buff); // Execute the request.
 			printf("Request : %s\n", request);
 		
 		close(newsock);
