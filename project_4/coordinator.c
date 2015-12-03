@@ -9,17 +9,13 @@
 	Date. Nov 13, 2015.
 */
 
-//TODO add bootstrap of the data, the function to be added 
-//     in 2pc_server.c (acceptor)
-//TODO add Election Algorithm
+//TODO Add bootstrap of the data, the function to be added in 2pc_server.c (acceptor)
 #include "coordinator.h"
-#define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
 
 int ack_count;
 int go_ack_count;
 pthread_mutex_t thread_lock;
-const int count = 2; // Number of nodes.
-char *leader;
+int count; // Number of nodes.
 
 void get_and_add_ack(){
 			pthread_mutex_lock(&thread_lock);
@@ -56,36 +52,6 @@ int tcp_connect(char *IP, char *port){
 				return -1;
     }
 		return sockfd;
-}
-void *hearbeat(void *addr_list){
-	struct host_list{
-		char **ips;
-		char **ports;
-		int len;
-	}* p_addr_list;
-	p_addr_list = (struct host_list*)addr_list;
-	char **ips = p_addr_list->ips;
-	char **ports = p_addr_list->ports;
-	int len = p_addr_list->len;
-	int i, sockfd;
-	char *ping = "ping";
-	int alive = 0;
-	for(i = 0 ; i < len ; i++){
-		sockfd = tcp_connect(ips[i], ports[i]);	
-		if(sockfd == -1){ // node failed
-			if(strcmp(leader, ips[i]) == 0){ // Leader failed.
-				leader_election();						
-			}
-			else{
-				printf("node %s:%s failed\n",ips[i], ports[i]);
-			}
-		}
-		else{
-			alive++;
-			printf("node %s:%s alive", ips[i], ports[i]);
-		} // check next node.
-	}
-	printf("Heartbeat check #alive-nodes:%d #dead-nodes:%d", alive, len - alive);
 }
 
 void *two_pc_protocol(void *addr){
@@ -132,7 +98,6 @@ void *two_pc_protocol(void *addr){
 		return NULL ;
 }
 
-
 // Coordinator.
 // This will be called by rpc_kev_server
 bool run(char request[1024], bool read_flag){
@@ -147,9 +112,11 @@ bool run(char request[1024], bool read_flag){
 //		char *ports[] = {"10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000", "10000"};  // add ports here.
 		char *ip[] = {"localhost", "localhost"}; // add ip here.
 		char *ports[] = {"10000", "10001"};  // add ports here.
-		if((sizeof(ip) / sizeof(ip[0])) != count){
-			printf("Incorrect global count value!!\n");
-		}
+//		if((sizeof(ip) / sizeof(ip[0])) != count){
+//			printf("Incorrect global count value!! \n Exiting\n");
+//			exit(1);
+//		}
+		count = (sizeof(ip) / sizeof(ip[0]));
 		struct host_addr
 		{
 				char *IP;
