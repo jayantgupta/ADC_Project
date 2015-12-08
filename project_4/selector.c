@@ -32,7 +32,7 @@
 */
 
 int tcp_connect(char *IP, char *port);
-char *heartbeat(char **ips, char **ports, int len, char *leader);
+char *heartbeat(char **ips, char **ports, int len, char *leader, int *last_val);
 char *leader_election();
 
 int main(int argc, char** argv){
@@ -40,11 +40,12 @@ int main(int argc, char** argv){
 	char *ports[] = {"10000", "10001", "10002", "10003"};
 	int len = (sizeof(ips) / sizeof(ips[0])) ;
 
-	char * leader = leader_election(ips, ports);
-	printf("here\n");
+//	char * leader = leader_election(ips, ports);
+	int last_val = 0;
+	char * leader = "dummy";
 	while(true && leader != NULL){
 		printf("Current Leader : %s\n", leader);
-		leader = heartbeat(ips, ports, len, leader);
+		leader = heartbeat(ips, ports, len, leader, &last_val);
 		sleep(1);
 	}
 	return 0;	
@@ -90,10 +91,19 @@ int tcp_connect(char *IP, char *port){
 				return sockfd;
 }
 
+void write_to_file(char *name, int val){
+	char buffer[10];
+	sprintf(buffer, "%d", val);
+	FILE *fp = fopen(name, "w");
+	fputs(buffer, fp);
+	fclose(fp);
+	return;
+}
 char *heartbeat(char **ips,
 								char **ports,
 								int len,
-								char *leader){
+								char *leader,
+								int *last_val){
 				printf("sending heartbeat\n");
 				int i, sockfd;
 				int alive = 0;
@@ -101,12 +111,12 @@ char *heartbeat(char **ips,
 								sockfd = tcp_connect(ips[i], ports[i]);
 								printf("sockfd : %d\n",sockfd);
 								if(sockfd == -1){ // node failed
-												if(strcmp(leader, ports[i]) == 0){ // Leader failed.
-																leader = leader_election(ips, ports, len);
-												}
-												else{
-																printf("node %s:%s has failed\n",ips[i], ports[i]);
-												}
+								//				if(strcmp(leader, ports[i]) == 0){ // Leader failed.
+								//								leader = leader_election(ips, ports, len);
+								//				}
+								//				else{
+												printf("node %s:%s has failed\n",ips[i], ports[i]);
+												//				}
 								}
 								else{
 												close(sockfd);
@@ -115,5 +125,10 @@ char *heartbeat(char **ips,
 								} // check next node.
 				}
 				printf("Heartbeat check #alive-nodes:%d #dead-nodes:%d\n", alive, len - alive);
-				return leader;
+				if(*last_val != alive){
+					*last_val = alive;
+					write_to_file("SYSTEM_buffer", alive);
+				}
+//				return leader;
+				return "dummy";
 }

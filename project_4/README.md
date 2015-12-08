@@ -19,3 +19,8 @@ Client side
 (Server-IP can be any value from n01 to n09)
 
 After the client connects to the server, GET, PUT and DELETE requests can be sent to the server.
+
+Added.
+
+heartbeat.c # A tcp server that is used to give heartbeat signals.
+selector.c # Selector to read the heartbeat from each server and chose the leader (if applicable).

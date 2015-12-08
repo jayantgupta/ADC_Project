@@ -2,8 +2,8 @@
 	 Serving 2-phase commit requests amongst various servers
 	 Initial Version : Alaka Sukumar
 	 2-phase commit version : Jayant Gupta
- 	 Updated Date : November 13, 2015
-*/
+	 Updated Date : November 13, 2015
+ */
 
 #include "keyval.h"
 #include <sys/types.h>
@@ -18,28 +18,28 @@ char *exec_rqst(char *);
 long unsigned int promised_id;// greatest promised id
 long unsigned int current_accepted_id;// greatest accepted id seen by acceptor
 char *request; // the request to be processed
- const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
- const char *INIT_Accepted = "INIT_Accepted"; // store greatest accepted id in this file
+const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
+const char *INIT_Accepted = "INIT_Accepted"; // store greatest accepted id in this file
+
 //init method to initialize values on node reboot */
 void init(long unsigned int prom_id,long unsigned int accep_id){
+				/* read and initialize promise id*/
 
-               /* read and initialize promise id*/
+				FILE *fp = fopen(INIT_Promise, "r");
+				fscanf(fp, "%lu", &prom_id); // Copied alive nodes from file.
+				fclose(fp);
 
-                FILE *fp = fopen(INIT_Promise, "r");
-	        fscanf(fp, "%lu", &prom_id); // Copied alive nodes from file.
-	        fclose(fp);
-                
-                printf("Promise id initialized is  : %lu \n",prom_id);
-                
-                /* read and initialize accepted id*/
+				printf("Promise id initialized is  : %lu \n",prom_id);
 
-                FILE *fs = fopen(INIT_Accepted, "r");
-	        fscanf(fs, "%lu", &accep_id); // Copied alive nodes from file.
-	        fclose(fs);
-                
-                printf("Accepted id initialized is  : %lu \n",accep_id);
-            
-                printf("Initialized\n"); 
+				/* read and initialize accepted id*/
+
+				FILE *fs = fopen(INIT_Accepted, "r");
+				fscanf(fs, "%lu", &accep_id); // Copied alive nodes from file.
+				fclose(fs);
+
+				printf("Accepted id initialized is  : %lu \n",accep_id);
+
+				printf("Initialized\n"); 
 }
 
 int main(int argc, char *argv[]){
@@ -50,19 +50,15 @@ int main(int argc, char *argv[]){
 	/*
 		Setting up the key-value directory.
 	*/
-	const char *name = "word_list";
-	//init_dict(name);	
 	int sockfd, newsock, recv_bytes ;
 	bool val = true;
 	struct sockaddr_in server_addr, client_addr;
 	int sin_size;
         const char *log_filename = "tcp_server.log";
 
-	fd_set myset;
-	struct timeval tv;
-        /* call init function to initialize the values */
-
-        init(promised_id,current_accepted_id);
+  /* call init function to initialize the values */
+  init(promised_id, current_accepted_id);
+	sync(current_accepted_id); // 
 	
 	/* creating a socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -92,12 +88,6 @@ int main(int argc, char *argv[]){
 		exit(1);
 	}
 
-	/* Creating Time out values */
-	tv.tv_sec = 0;  // seconds
-	tv.tv_usec = 10000; // microseconds
-	FD_ZERO(&myset);
-	FD_SET(sockfd, &myset);
-
 	/* logging server listening */
   printf("Server Listening ..\n");
 	fflush(stdout);
@@ -110,7 +100,7 @@ int main(int argc, char *argv[]){
 		newsock = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
 		printf("Accepted Request\n");
 		// Serve first request.Check if sequence number less than its own stored seq number.
-                /* Phase 1 - receive proposal */ 
+    /* Phase 1 - receive proposal */ 
                 
 		recv_bytes = recv(newsock, recv_buff, 1024, 0);
 		recv_buff[recv_bytes] = '\0';
@@ -195,7 +185,7 @@ int main(int argc, char *argv[]){
                 recv_bytes = recv(newsock, recv_buff, 1024, 0);
 		recv_buff[recv_bytes] = '\0'; 
 		
-			exec_rqst(recv_buff); // Execute the request.
+			learner(recv_buff); // learner.
 			printf("Request : %s\n", request);
 		
 		close(newsock);
@@ -208,7 +198,7 @@ int main(int argc, char *argv[]){
 
 // Takes the first request and responds as ACK.
 // Assuming all the errors are checked at the coordinator-server
-char * exec_rqst(char * request){
+char * learner(char * request){
 		printf("Executing Request : %s\n", request);
 		/* code to validate the request*/
 		const char s[2] = ":";

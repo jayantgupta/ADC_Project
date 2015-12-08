@@ -1,0 +1,8 @@
+PAXOS.
+-> Add log mechanism in the acceptor, that will be used by a recovering node to recover
+
+INIT_Accepted : Stores the acceptors accepted values.
+INIT_Promise : Stores the acceptors promised values.
+SYSTEM_buffer : Contains the number of nodes alive/dead.
+
+proposer -> acceptor
