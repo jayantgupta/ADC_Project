@@ -15,6 +15,9 @@ int accepted_count;
 pthread_mutex_t thread_lock;
 int count = 2; // Number of nodes.
 int quorum;
+const char *SYSTEM_FILE = "SYSTEM_buffer";
+char c[1000];
+int alivenodes;
   
 /* current highest seq number of proposer */
 long unsigned int current_id = 0;
@@ -50,6 +53,7 @@ void *propose(void *addr){
     char send_buff[1024], recv_buff[1024];
     struct sockaddr_in server_addr;
     struct hostent *host = gethostbyname(IP);
+    
  
 		fd_set myset;
     struct timeval tv;
@@ -121,11 +125,18 @@ void *propose(void *addr){
 						
 		}
 		printf("promise count : %d\n", promise_count);
-               /* check if promise is received by quorum */
+                /* compute quorum by checking number of nodes alive */
+                
+                FILE *fs = fopen(SYSTEM_FILE, "r");
+	        fscanf(fs, "%s", c); // Copied alive nodes from file.
+                
+	        fclose(fs);
+                alivenodes = atoi(c);
+                quorum = (alivenodes/2)+1;
 		while(promise_count < quorum && !read_flag){
 			//spin;
 		}
-		printf("%s : %d\n", port, promise_count);
+		
                  /* Send Accept */
                 char acceptmessage[50];
                 strcpy(acceptmessage,  "accept:");
@@ -165,8 +176,15 @@ void *propose(void *addr){
 		}
 		printf("accepted count : %d\n", accepted_count);
                /* check if accepted is received by quorum */
+               /* compute quorum by checking number of nodes alive */
+                FILE *fp = fopen(SYSTEM_FILE, "r");
+	        fscanf(fp, "%s", c); // Copied alive nodes from file.
+	        fclose(fp);
+                alivenodes = atoi(c);
+                printf("THE NUMBER  OF LIVE NODES ARE : %d\n",alivenodes);
+                quorum = (alivenodes/2) + 1;
 		while(accepted_count < quorum && !read_flag){
-			//spin;
+			//spin; 
 		}
 		printf("%s : %d\n", port, accepted_count);
                 
@@ -203,7 +221,7 @@ void *propose(void *addr){
 		struct host_addr **addr = (struct host_addr **)malloc(sizeof(struct host_addr*)*count);
 		pthread_t thread_array[count];
 		promise_count = 0;
-                quorum = (count/2) + 1 ; 
+                //quorum = (count/2) + 1 ; 
 		accepted_count = 0;
 		for(i = 0 ; i < count ; i++){
 			addr[i] = (struct host_addr *)malloc(sizeof(struct host_addr));

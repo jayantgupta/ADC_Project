@@ -15,10 +15,33 @@
 
 const char *GET_FILE = "GET_buffer";
 char *exec_rqst(char *);
-long unsigned int current_acceptor_id = 0;// greatest proposal id seen by acceptor
-long unsigned int promised_id = 0;// greatest promised id
-long unsigned int current_accepted_id = 0;// greatest accepted id seen by acceptor
+long unsigned int promised_id;// greatest promised id
+long unsigned int current_accepted_id;// greatest accepted id seen by acceptor
 char *request; // the request to be processed
+ const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
+ const char *INIT_Accepted = "INIT_Accepted"; // store greatest accepted id in this file
+//init method to initialize values on node reboot */
+void init(long unsigned int prom_id,long unsigned int accep_id){
+
+               /* read and initialize promise id*/
+
+                FILE *fp = fopen(INIT_Promise, "r");
+	        fscanf(fp, "%lu", &prom_id); // Copied alive nodes from file.
+	        fclose(fp);
+                
+                printf("Promise id initialized is  : %lu \n",prom_id);
+                
+                /* read and initialize accepted id*/
+
+                FILE *fs = fopen(INIT_Accepted, "r");
+	        fscanf(fs, "%lu", &accep_id); // Copied alive nodes from file.
+	        fclose(fs);
+                
+                printf("Accepted id initialized is  : %lu \n",accep_id);
+            
+                printf("Initialized\n"); 
+}
+
 int main(int argc, char *argv[]){
 	if(argc != 2){
 		printf("Error\nUsage ./2pc_server.exec port\n");
@@ -37,6 +60,9 @@ int main(int argc, char *argv[]){
 
 	fd_set myset;
 	struct timeval tv;
+        /* call init function to initialize the values */
+
+        init(promised_id,current_accepted_id);
 	
 	/* creating a socket */
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
@@ -106,14 +132,19 @@ int main(int argc, char *argv[]){
                  printf("The receieve proposer id is : %s \n", allTokens[1]);
                  long unsigned int received_prop_id = atol(allTokens[1]);
                  
-                 /* check if current acceptor id is equal to or greater than received proposal id */
-                 if (current_acceptor_id == received_prop_id || received_prop_id > current_acceptor_id){                        
-                 current_acceptor_id = received_prop_id; 
-                 promised_id = current_acceptor_id; // set promised id to acceptor id to be sent in promise message
+                 /* check if current promised id is equal to or greater than received proposal id */
+                 if (promised_id == received_prop_id || received_prop_id > promised_id){                        
+                 promised_id= received_prop_id; 
+                 /* store promised id in INIT_Promise file */
+                 FILE *fp1 = fopen(INIT_Promise, "w");
+						fprintf(fp1, "%lu", promised_id);
+						fclose(fp1);
+
+
                 /* send promise message */
                 
-                char str[15];
-                sprintf(str, "%lu", current_acceptor_id);              
+                char str[15]; 
+                sprintf(str, "%lu", promised_id);              
                 char promisemessage[50];
                 strcpy(promisemessage,  "promise:");
                 strcat(promisemessage, str);// This is the promise message
@@ -145,6 +176,10 @@ int main(int argc, char *argv[]){
                 /* check if promised id is greater than accept id received from proposer */
                 if (promised_id == received_accept_id || received_accept_id > promised_id){
                 current_accepted_id = received_accept_id; 
+                /* store accepted id in INIT_Accepted file */
+                 FILE *fp2 = fopen(INIT_Accepted, "w");
+						fprintf(fp2, "%lu", current_accepted_id);
+						fclose(fp2);
                 /* send accepted message to proposer */
                 char accepted_id_for_msg[15];
                 sprintf(accepted_id_for_msg, "%lu", current_accepted_id); 
@@ -168,6 +203,8 @@ int main(int argc, char *argv[]){
 	close(sockfd);
 	return 0;
 }
+
+
 
 // Takes the first request and responds as ACK.
 // Assuming all the errors are checked at the coordinator-server

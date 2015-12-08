@@ -47,7 +47,8 @@ get_1_svc(int *argp, char **result, struct svc_req *rqstp)
 	FILE *fp = fopen(GET_FILE, "r");
 	fscanf(fp, "%s", *result); // Copied result from file.
 	fclose(fp);
-	printf("%s\n", *result);
+	printf("%s\n", *result);                                                                                         
+
 //	strcpy(*result, _GET(*argp));
 	printf("Lock Released\n");
 	pthread_mutex_unlock(&lock);
