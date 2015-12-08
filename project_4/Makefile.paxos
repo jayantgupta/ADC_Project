@@ -24,7 +24,7 @@ LDLIBS += -lnsl -lpthread
 
 # Targets 
 
-all : $(CLIENT) $(SERVER) acceptor my_clean
+all : $(CLIENT) $(SERVER) acceptor heartbeat selector my_clean
 
 #$(TARGETS) : $(SOURCES.x) 
 #	rpcgen $(RPCGENFLAGS) $(SOURCES.x)
@@ -41,6 +41,12 @@ $(SERVER) : $(OBJECTS_SVC) proposer.o keyval.o
 
 acceptor : acceptor.o keyval.o
 	$(LINK.c) -o acceptor acceptor.o keyval.o 
+
+heartbeat: heartbeat.c
+	$(LINK.c) -o heartbeat heartbeat.c
+
+selector: selector.c
+	$(LINK.c) -o selector selector.c
 
 keyval.o : keyval.c
 	$(LINK.c) -c keyval.c
