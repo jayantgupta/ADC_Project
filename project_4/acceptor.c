@@ -16,6 +16,7 @@
 const char *GET_FILE = "GET_buffer";
 long unsigned int promised_id;// greatest promised id
 long unsigned int current_accepted_id;// greatest accepted id seen by acceptor
+char *current_accepted_request = "";
 const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
 const char *INIT_Accepted = "INIT_Accepted"; // store greatest accepted id in this file
 char sync_log[20000][60]; // stores the requests learnt till now.
@@ -32,7 +33,7 @@ void serve_sync_request(int sockfd, long unsigned int current_id);
 
 int main(int argc, char *argv[]){
 				if(argc != 2){
-								printf("Error\nUsage ./2pc_server.exec port\n");
+								printf("Error\nUsage ./acceptor.exec port\n");
 								exit(1);
 				}	
 				/*
@@ -78,17 +79,22 @@ int main(int argc, char *argv[]){
 									serve_sync_request(newsock, atoi(allTokens[1]));
 									continue;
 								}
-								printf("The receieve proposer id is : %s \n", allTokens[1]);
+								printf("The received proposer id is : %s \n", allTokens[1]);
+                                                                 printf("The received request is : %s \n", allTokens[2]);
+                                                                 current_accepted_request = allTokens[2];
 							
 								long unsigned int received_prop_id = atol(allTokens[1]);
 
 								/* check if current received proposal id is greater than promised_id*/
-								if (received_prop_id >= promised_id){                        
+								if (received_prop_id >= promised_id ){                        
 												promised_id = received_prop_id; 
 												/* store promised id in INIT_Promise file */
 												store_buffer(INIT_Promise, promised_id);
 								}else{
-									//abort and re-initiate.
+									/* send NACK */
+                                                                  char *nackmessage = build_message("NACK:", received_prop_id);
+                                                                  printf("NACK Message is : %s\n", nackmessage);
+								  send(newsock, nackmessage, strlen(nackmessage), 0);// Send back NACK 
 								}
 												
 								/* send promise message */
@@ -105,8 +111,8 @@ int main(int argc, char *argv[]){
 								char *request = allAcceptTokens[2];
 								long unsigned int received_accept_id = atol(allAcceptTokens[1]);
 
-								/* check if promised id is still greater than or equal to accept id received from proposer */
-								if (received_accept_id >= promised_id){
+								/* check if promised id is still greater than or equal to accept id received from proposer and if request promised is same as accepted request*/
+								if (received_accept_id >= promised_id && strcmp(current_accepted_request, request) == 0 ){
 												current_accepted_id = received_accept_id; 
 												/* store accepted id in INIT_Accepted file */
 												store_buffer(INIT_Accepted, current_accepted_id);
@@ -121,7 +127,10 @@ int main(int argc, char *argv[]){
 												send(newsock, acceptedmessage, strlen(acceptedmessage), 0);
 								}
 								else{ 
-									// abort and re-initiate 								
+									/* send NACK */
+                                                                  char *nackacceptmessage = build_message("NACK:", received_accept_id);
+                                                                  printf("NACK Message is : %s\n", nackacceptmessage);
+								  send(newsock, nackacceptmessage, strlen(nackacceptmessage), 0);// Send back NACK  								
 								}
 
 								/* invoke learner */

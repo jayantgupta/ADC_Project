@@ -97,13 +97,14 @@ char ** get_tokens(char *recv_buff){
 				return allTokens;
 }
 
-char *prepare_message(long unsigned int current_id){
+char *prepare_message(long unsigned int current_id,char *request){
 				char str[15];
 				sprintf(str, "%lu", current_id); 
 				printf("The current id string is : %s\n", str);
 				char *preparemessage = (char *)malloc(sizeof(char) * 50);
 				strcpy(preparemessage,  "prepare:");
-				strcat(preparemessage, str);// This is the prepare message
+				strcat(preparemessage, str);
+                                strcat(preparemessage, request);// This is the prepare message
 				return preparemessage;
 }
 
@@ -140,7 +141,7 @@ void *propose(void *addr){
 				
 				/* send Prepare to the connected server */
 				long unsigned int proposal_id = current_id;
-				char *preparemessage = prepare_message(current_id);
+				char *preparemessage = prepare_message(current_id,request);
 
 				printf("prepare msg is %s \n", preparemessage);
 				send(sockfd, preparemessage, strlen(preparemessage), 0); // prepare
@@ -158,6 +159,14 @@ void *propose(void *addr){
 				if(strcmp(receivedmsg, "promise" ) == 0){
 								get_and_add_promise();
 				}
+                                else if(strcmp(receivedmsg, "NACK" ) == 0){
+                                /* if NACK received from acceptor */
+                                current_id = current_id + 1; // increment current id and resend
+                                preparemessage = prepare_message(current_id,request);
+                                printf("prepare msg is %s \n", preparemessage);
+				send(sockfd, preparemessage, strlen(preparemessage), 0); // resend prepare  
+
+                                 }
 				printf("promise count : %d\n", promise_count);
 				
 				while(promise_count < quorum && !read_flag){
@@ -182,6 +191,14 @@ void *propose(void *addr){
 				if(strcmp(receivedacceptedmsg, "accepted" ) == 0){
 								get_and_add_accepted();
 				}
+                                else if(strcmp(receivedacceptedmsg, "NACK" ) == 0){
+                                /* if NACK received from acceptor */
+                                current_id = current_id + 1; // increment current id and resend
+                                preparemessage = prepare_message(current_id,request);
+                                printf("prepare msg is %s \n", preparemessage);
+				send(sockfd, preparemessage, strlen(preparemessage), 0); // resend prepare  
+
+                                 }
 				printf("accepted count : %d\n", accepted_count);
 				
 				/* check if accepted is received by quorum */
