@@ -46,21 +46,21 @@ int main(int argc, char *argv[]){
 
 				/* call init function to initialize the values */
 				init(promised_id, current_accepted_id);
-				server_sync(current_accepted_id);
-				//sync(current_accepted_id); // To start syncing.
+//				server_sync(current_accepted_id);
+//sync(current_accepted_id); // To start syncing.
 				/*
-					send sync request to the known servers.
-					They respond with their logs, if their ID is greater than this server's id.
-					Otherwise, they abandon the task.
+					 send sync request to the known servers.
+					 They respond with their logs, if their ID is greater than this server's id.
+					 Otherwise, they abandon the task.
 
-					When they receive the sync request does the same thing as described above but 
-					instead sends its own command history.
+					 When they receive the sync request does the same thing as described above but 
+					 instead sends its own command history.
 
-				*/
+				 */
 				sockfd = create_tcp_server(argv[1]);
 
 				/* server listening */
-				printf("Server Listening ..\n");
+				printf("Acceptor Listening ..\n");
 				fflush(stdout);
 				while(1){
 								char send_buff [1024] , recv_buff[1024];
@@ -73,30 +73,31 @@ int main(int argc, char *argv[]){
 
 								recv_bytes = recv(newsock, recv_buff, 1024, 0);
 								recv_buff[recv_bytes] = '\0';
-								printf("%s\n", recv_buff);
+								printf("Received msg: %s\n", recv_buff);
 								char ** allTokens = get_tokens(recv_buff);             
 								if(strcmp(allTokens[0], "SYNC") == 0){
-									serve_sync_request(newsock, atoi(allTokens[1]));
-									continue;
+												serve_sync_request(newsock, atoi(allTokens[1]));
+												continue;
 								}
 								printf("The received proposer id is : %s \n", allTokens[1]);
-                                                                 printf("The received request is : %s \n", allTokens[2]);
-                                                                 current_accepted_request = allTokens[2];
-							
+								printf("The received request is : %s \n", allTokens[2]);
+								current_accepted_request = allTokens[2];
+
 								long unsigned int received_prop_id = atol(allTokens[1]);
 
 								/* check if current received proposal id is greater than promised_id*/
 								if (received_prop_id >= promised_id ){                        
 												promised_id = received_prop_id; 
 												/* store promised id in INIT_Promise file */
+												printf("Storing promise buffer\n");
 												store_buffer(INIT_Promise, promised_id);
 								}else{
-									/* send NACK */
-                                                                  char *nackmessage = build_message("NACK:", received_prop_id);
-                                                                  printf("NACK Message is : %s\n", nackmessage);
-								  send(newsock, nackmessage, strlen(nackmessage), 0);// Send back NACK 
+												/* send NACK */
+												char *nackmessage = build_message("NACK:", received_prop_id);
+												printf("NACK Message is : %s\n", nackmessage);
+												send(newsock, nackmessage, strlen(nackmessage), 0);// Send back NACK 
 								}
-												
+
 								/* send promise message */
 								char *promisemessage = build_message("promise:", promised_id);
 								printf("Promise Message is : %s\n", promisemessage);
@@ -115,22 +116,23 @@ int main(int argc, char *argv[]){
 								if (received_accept_id >= promised_id && strcmp(current_accepted_request, request) == 0 ){
 												current_accepted_id = received_accept_id; 
 												/* store accepted id in INIT_Accepted file */
+												printf("Storing Accepted buffer\n");
 												store_buffer(INIT_Accepted, current_accepted_id);
 												/* add values to sync log*/
 												strcpy(sync_log[current_accepted_id], accept_id);
 												strcat(sync_log[current_accepted_id], ":");
 												strcat(sync_log[current_accepted_id], request);
-												
+
 												/* send accepted message to proposer */
 												char *acceptedmessage = build_message("accepted:", current_accepted_id);
 												printf("Accepted Message is : %s\n", acceptedmessage); 
 												send(newsock, acceptedmessage, strlen(acceptedmessage), 0);
 								}
 								else{ 
-									/* send NACK */
-                                                                  char *nackacceptmessage = build_message("NACK:", received_accept_id);
-                                                                  printf("NACK Message is : %s\n", nackacceptmessage);
-								  send(newsock, nackacceptmessage, strlen(nackacceptmessage), 0);// Send back NACK  								
+												/* send NACK */
+												char *nackacceptmessage = build_message("NACK:", received_accept_id);
+												printf("NACK Message is : %s\n", nackacceptmessage);
+												send(newsock, nackacceptmessage, strlen(nackacceptmessage), 0);// Send back NACK  								
 								}
 
 								/* invoke learner */
@@ -146,67 +148,67 @@ int main(int argc, char *argv[]){
 }
 
 char * build_message(char *msg, long unsigned int ID){
-	char str[15];
-	sprintf(str, "%lu", ID);
-	char *message = (char *)malloc(sizeof(char) * 50);
-	strcpy(message, msg);
-	strcat(message, str);
-	return message;
+				char str[15];
+				sprintf(str, "%lu", ID);
+				char *message = (char *)malloc(sizeof(char) * 50);
+				strcpy(message, msg);
+				strcat(message, str);
+				return message;
 }
 
 void serve_sync_request(int newsock, long unsigned int sync_accepted_id){
-	int recv_bytes, i;
-	char recv_buff[1024];
-	char **allTokens;
-	if(sync_accepted_id >= current_accepted_id){
-		send(newsock, "NO_DATA", strlen("NO_DATA"), 0);
-	}	
-	else{
-		send(newsock, "DATA", strlen("DATA"), 0);
-		recv_bytes = recv(newsock, recv_buff, 1024, 0);
-		allTokens = get_tokens(recv_buff);
-		if(strcmp(allTokens[0], "READY") == 0){
-			// send all the commands for sync-up.
-			for(i = 0 ; i< current_accepted_id ; i++){
-				send(newsock, sync_log[i], strlen(sync_log[i]), 0);
-			}
-			char *donemessage = build_message("DONE:", current_accepted_id);
-			send(newsock, donemessage, strlen(donemessage), 0);
-		}
-	}
-	close(newsock);
-	return;
+				int recv_bytes, i;
+				char recv_buff[1024];
+				char **allTokens;
+				if(sync_accepted_id >= current_accepted_id){
+								send(newsock, "NO_DATA", strlen("NO_DATA"), 0);
+				}	
+				else{
+								send(newsock, "DATA", strlen("DATA"), 0);
+								recv_bytes = recv(newsock, recv_buff, 1024, 0);
+								allTokens = get_tokens(recv_buff);
+								if(strcmp(allTokens[0], "READY") == 0){
+												// send all the commands for sync-up.
+												for(i = 0 ; i< current_accepted_id ; i++){
+																send(newsock, sync_log[i], strlen(sync_log[i]), 0);
+												}
+												char *donemessage = build_message("DONE:", current_accepted_id);
+												send(newsock, donemessage, strlen(donemessage), 0);
+								}
+				}
+				close(newsock);
+				return;
 }
 
 void server_sync(long unsigned int ID){
-	char *ip[] = {"localhost", "localhost"};
-	char *ports[] = {"10000", "10001"};
-	int count = sizeof(ip) / sizeof(ip[0]);
-	int i, recv_bytes;
-	char recv_buff[1024];
-	for(i = 0 ; i < count ; i++){
-			int sockfd = create_tcp_connection(ip[i], ports[i]);
-			char *syncmessage = build_message("SYNC:", ID);
-			send(sockfd, syncmessage, strlen(syncmessage), 0); // syncing.
-			recv_bytes = recv(sockfd, recv_buff, 1024, 0);
-			char **allTokens = get_tokens(recv_buff);
-			if(strcmp(allTokens[0], "NO_DATA") == 0){
-				continue;
-			}
-			else if(strcmp(allTokens[0], "DATA") == 0){
-				send(sockfd, "READY", strlen("READY"), 0);
-				char *id, *request;
-				do{
-					recv_bytes = recv(sockfd, recv_buff, 1024, 0);
-					allTokens = get_tokens(recv_buff);
-					id = allTokens[0];
-					request = allTokens[1]; //extracting the request here.
-					if(strcmp(request, "DONE") != 0){
-						learner(request);
-					}
-				}while(strcmp(request, "DONE") == 0);
-			}
-	}
+				char *ip[] = {"localhost", "localhost"};
+				char *ports[] = {"10000", "10001"};
+				int count = sizeof(ip) / sizeof(ip[0]);
+				int i, recv_bytes;
+				char recv_buff[1024];
+				for(i = 0 ; i < count ; i++){
+								int sockfd = create_tcp_connection(ip[i], ports[i]);
+								char *syncmessage = build_message("SYNC:", ID);
+								send(sockfd, syncmessage, strlen(syncmessage), 0); // syncing.
+								recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+								char **allTokens = get_tokens(recv_buff);
+								if(strcmp(allTokens[0], "NO_DATA") == 0){
+												continue;
+								}
+								else if(strcmp(allTokens[0], "DATA") == 0){
+												send(sockfd, "READY", strlen("READY"), 0);
+												char *id, *request;
+												do{
+																recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+																allTokens = get_tokens(recv_buff);
+																id = allTokens[0];
+																request = allTokens[1]; //extracting the request here.
+																if(strcmp(request, "DONE") != 0){
+																				learner(request);
+																}
+												}while(strcmp(request, "DONE") == 0);
+								}
+				}
 }
 
 // Establishes a tcp connection with a tcp server on the given IP and port.
@@ -304,7 +306,7 @@ char **get_tokens(char *recv_buff){
 				while( token != NULL && i < 3)   
 				{ 
 								allTokens[i] = (char *)malloc(sizeof(char)*26);
-///								printf("%s\n", token);	
+								///								printf("%s\n", token);	
 								strcpy(allTokens[i], token);
 								token = strtok(NULL, s);
 								i++;
@@ -322,50 +324,50 @@ void store_buffer(const char *buffer_file, long unsigned int ID){
 // Takes the first request and responds as ACK.
 // Assuming all the errors are checked at the coordinator-server
 char * learner(char * request){
-		printf("Executing Request : %s\n", request);
-		/* code to validate the request*/
-/*		const char s[2] = ":";
-		char *token;
-//		get the first token 
-		token = strtok(request, s);            
-		char allTokens[3][26];             
-		int i = 0;
-		while( token != NULL && i < 3)   
-		{ 
-					 printf("%s\n", token);	
-						strcpy(allTokens[i],token);
-						token = strtok(NULL, s);
-						i++;
-		}*/
-		char ** allTokens = get_tokens(request);
-		if(strcmp(allTokens[0],"GET") == 0){ 
-						printf("Called method GET\n");
-						int key = atoi(allTokens[1]);
-						char *getValue = _GET(key);
-						FILE *fp = fopen(GET_FILE, "w");
-						fputs(getValue, fp);
-						fclose(fp);
-		} 
-		else if(strcmp(allTokens[0],"PUT") == 0){
-						printf("Inside PUT %s %s\n", allTokens[1], allTokens[2]);
-						bool putValue = _PUT(atoi(allTokens[1]), allTokens[2]); 
-						if(putValue){
-								return "COMMIT";
-						}
-						else{
-							return "PUT_ERROR";
-						}
+				printf("Executing Request : %s\n", request);
+				/* code to validate the request*/
+				/*		const char s[2] = ":";
+							char *token;
+				//		get the first token 
+				token = strtok(request, s);            
+				char allTokens[3][26];             
+				int i = 0;
+				while( token != NULL && i < 3)   
+				{ 
+				printf("%s\n", token);	
+				strcpy(allTokens[i],token);
+				token = strtok(NULL, s);
+				i++;
+				}*/
+				char ** allTokens = get_tokens(request);
+				if(strcmp(allTokens[0],"GET") == 0){ 
+								printf("Called method GET\n");
+								int key = atoi(allTokens[1]);
+								char *getValue = _GET(key);
+								FILE *fp = fopen(GET_FILE, "w");
+								fputs(getValue, fp);
+								fclose(fp);
+				} 
+				else if(strcmp(allTokens[0],"PUT") == 0){
+								printf("Inside PUT %s %s\n", allTokens[1], allTokens[2]);
+								bool putValue = _PUT(atoi(allTokens[1]), allTokens[2]); 
+								if(putValue){
+												return "COMMIT";
+								}
+								else{
+												return "PUT_ERROR";
+								}
 
-		}
-		else if(strcmp(allTokens[0],"DELETE") == 0){
-						printf("Inside DELETE\n");
-						bool delValue = _DELETE(atoi(allTokens[1]));
-						if(delValue){
-							return "COMMIT";
-						}
-						else{
-							return "DELETE_ERROR";
-						}                
-		}
-		return "UN_KNOWN_REQUEST";
+				}
+				else if(strcmp(allTokens[0],"DELETE") == 0){
+								printf("Inside DELETE\n");
+								bool delValue = _DELETE(atoi(allTokens[1]));
+								if(delValue){
+												return "COMMIT";
+								}
+								else{
+												return "DELETE_ERROR";
+								}                
+				}
+				return "UN_KNOWN_REQUEST";
 }

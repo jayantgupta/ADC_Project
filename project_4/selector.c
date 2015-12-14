@@ -37,7 +37,7 @@ char *leader_election();
 
 int main(int argc, char** argv){
 	char *ips[] = {"localhost", "localhost", "localhost", "localhost"};
-	char *ports[] = {"10000", "10001", "10002", "10003"};
+	char *ports[] = {"20000", "20001", "20002", "20003"};
 	int len = (sizeof(ips) / sizeof(ips[0])) ;
 
 //	char * leader = leader_election(ips, ports);
@@ -46,7 +46,7 @@ int main(int argc, char** argv){
 	while(true && leader != NULL){
 		printf("Current Leader : %s\n", leader);
 		leader = heartbeat(ips, ports, len, leader, &last_val);
-		sleep(1);
+		sleep(5);
 	}
 	return 0;	
 }
