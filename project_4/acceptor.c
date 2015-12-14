@@ -14,11 +14,11 @@
 #include <errno.h>
 
 const char *GET_FILE = "GET_buffer";
+const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
+const char *INIT_Accepted = "INIT_Accepted"; // store greatest accepted id in this file
 long unsigned int promised_id;// greatest promised id
 long unsigned int current_accepted_id;// greatest accepted id seen by acceptor
 char *current_accepted_request = "";
-const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
-const char *INIT_Accepted = "INIT_Accepted"; // store greatest accepted id in this file
 char sync_log[20000][60]; // stores the requests learnt till now.
 
 int create_tcp_connection(char *IP, char *port);
@@ -46,8 +46,6 @@ int main(int argc, char *argv[]){
 
 				/* call init function to initialize the values */
 				init(promised_id, current_accepted_id);
-//				server_sync(current_accepted_id);
-//sync(current_accepted_id); // To start syncing.
 				/*
 					 send sync request to the known servers.
 					 They respond with their logs, if their ID is greater than this server's id.
@@ -55,7 +53,6 @@ int main(int argc, char *argv[]){
 
 					 When they receive the sync request does the same thing as described above but 
 					 instead sends its own command history.
-
 				 */
 				sockfd = create_tcp_server(argv[1]);
 
@@ -70,7 +67,7 @@ int main(int argc, char *argv[]){
 								// Serve first request
 								// Check if sequence number less than its own stored seq number
 								/* Phase 1 - receive proposal */ 
-
+				PREPARE:
 								recv_bytes = recv(newsock, recv_buff, 1024, 0);
 								recv_buff[recv_bytes] = '\0';
 								printf("Received msg: %s\n", recv_buff);
@@ -81,6 +78,7 @@ int main(int argc, char *argv[]){
 								}
 								printf("The received proposer id is : %s \n", allTokens[1]);
 								printf("The received request is : %s \n", allTokens[2]);
+								printf("Current promised id is : %lu \n", promised_id);
 								current_accepted_request = allTokens[2];
 
 								long unsigned int received_prop_id = atol(allTokens[1]);
@@ -96,6 +94,7 @@ int main(int argc, char *argv[]){
 												char *nackmessage = build_message("NACK:", received_prop_id);
 												printf("NACK Message is : %s\n", nackmessage);
 												send(newsock, nackmessage, strlen(nackmessage), 0);// Send back NACK 
+												goto PREPARE;
 								}
 
 								/* send promise message */
@@ -107,7 +106,8 @@ int main(int argc, char *argv[]){
 								recv_bytes = recv(newsock, recv_buff, 1024, 0);
 								recv_buff[recv_bytes] = '\0'; 
 								/* process Accept msg */
-								char **allAcceptTokens = get_tokens(recv_buff);             
+								char **allAcceptTokens = get_tokens(recv_buff);
+	 							printf("Accepted Request : %s\n", recv_buff);							
 								char *accept_id = allAcceptTokens[1];
 								char *request = allAcceptTokens[2];
 								long unsigned int received_accept_id = atol(allAcceptTokens[1]);
@@ -132,7 +132,8 @@ int main(int argc, char *argv[]){
 												/* send NACK */
 												char *nackacceptmessage = build_message("NACK:", received_accept_id);
 												printf("NACK Message is : %s\n", nackacceptmessage);
-												send(newsock, nackacceptmessage, strlen(nackacceptmessage), 0);// Send back NACK  								
+												send(newsock, nackacceptmessage, strlen(nackacceptmessage), 0);// Send back NACK 
+												goto PREPARE;								
 								}
 
 								/* invoke learner */
@@ -157,6 +158,7 @@ char * build_message(char *msg, long unsigned int ID){
 }
 
 void serve_sync_request(int newsock, long unsigned int sync_accepted_id){
+				long unsigned int current_accepted_id;
 				int recv_bytes, i;
 				char recv_buff[1024];
 				char **allTokens;

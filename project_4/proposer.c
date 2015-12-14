@@ -79,6 +79,7 @@ int get_quorum(){
 }
 
 char ** get_tokens(char *recv_buff){
+				printf("Inside get tokens\n");
 				/* split promise msg on ":" */
 				const char s[2] = ":";
 				char *token;
@@ -144,11 +145,12 @@ void *propose(void *addr){
 				/* send Prepare to the connected server */
 				long unsigned int proposal_id = init() + 1; //current_id;
 				char *preparemessage = prepare_message(proposal_id,request);
-
+PROPOSE:
 				printf("prepare msg is %s \n", preparemessage);
 				send(sockfd, preparemessage, strlen(preparemessage), 0); // prepare
 				/* receive promise from quorum */
 				recv_bytes = recv(sockfd, recv_buff, 1024, 0); // prepare response
+				recv_buff[recv_bytes]='\0';
 				printf("%s:%s:%s \n", IP, port, recv_buff);
 				char ** allTokens = get_tokens(recv_buff);
 				char *receivedmsg = allTokens[0];
@@ -165,13 +167,16 @@ void *propose(void *addr){
 								/* if NACK received from acceptor */
 								current_id = current_id + 1; // increment current id and resend
 								preparemessage = prepare_message(current_id,request);
-								printf("prepare msg is %s \n", preparemessage);
-								send(sockfd, preparemessage, strlen(preparemessage), 0); // resend prepare  
+								printf("Inside NACK: prepare msg is %s \n", preparemessage);
+								goto PROPOSE;
+//								send(sockfd, preparemessage, strlen(preparemessage), 0); // resend prepare  
+
 
 				}
 				printf("promise count : %d\n", promise_count);
 
 				while(promise_count < quorum && !read_flag){
+//								printf("Spinning here...\n");
 								//spin;TODO add timeout here.
 				}
 
@@ -182,6 +187,7 @@ void *propose(void *addr){
 
 				/* receive accepted by quorum */
 				recv_bytes = recv(sockfd, recv_buff, 1024, 0);
+				recv_buff[recv_bytes]='\0';
 				printf("%s:%s:%s \n", IP, port, recv_buff);
 				char **allAcceptedTokens = get_tokens(recv_buff);            
 				char *receivedacceptedmsg = allAcceptedTokens[0];
@@ -197,13 +203,15 @@ void *propose(void *addr){
 								/* if NACK received from acceptor */
 								current_id = current_id + 1; // increment current id and resend
 								preparemessage = prepare_message(current_id,request);
-								printf("prepare msg is %s \n", preparemessage);
-								send(sockfd, preparemessage, strlen(preparemessage), 0); // resend prepare  
+								printf("INSIDE 2NACK : prepare msg is %s \n", preparemessage);
+//								send(sockfd, preparemessage, strlen(preparemessage), 0); // resend prepare 
+							 goto PROPOSE;	
 				}
 				printf("accepted count : %d\n", accepted_count);
 				
 				/* check if accepted is received by quorum */
 				while(accepted_count < quorum && !read_flag){
+//								printf("Spinning here...\n");
 								//spin; 
 				}
 				printf("%s:%s:%d\n", IP, port, accepted_count);
