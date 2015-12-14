@@ -40,6 +40,7 @@ void init_keyval_store(CLIENT *clnt, char **INIT){
 								}else{
 												printf("PUT FAILED\n");
 								}
+								sleep(1);
 				}
 				printf("key-value store initialized\n");
 }
@@ -67,7 +68,7 @@ keyval_prog_1(char *host)
 #endif	/* DEBUG */
 			
 			char *INIT[7] = {"0:Monday", "1:Tuesday", "2:Wednesday", "3:Thursday", "4:Friday", "5:Saturday",  "6:Sunday"};
-//			init_keyval_store(clnt, INIT);
+			init_keyval_store(clnt, INIT);
 			while(true){
 					char cmd[50];
 					printf("Enter Command\n-------\nGET:<key>\nPUT:<key>:<value>\nDELETE:<key>\n------\n");

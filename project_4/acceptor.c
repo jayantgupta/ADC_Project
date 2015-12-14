@@ -106,8 +106,8 @@ int main(int argc, char *argv[]){
 								recv_bytes = recv(newsock, recv_buff, 1024, 0);
 								recv_buff[recv_bytes] = '\0'; 
 								/* process Accept msg */
-								char **allAcceptTokens = get_tokens(recv_buff);
 	 							printf("Accepted Request : %s\n", recv_buff);							
+								char **allAcceptTokens = get_tokens(recv_buff);
 								char *accept_id = allAcceptTokens[1];
 								char *request = allAcceptTokens[2];
 								long unsigned int received_accept_id = atol(allAcceptTokens[1]);
