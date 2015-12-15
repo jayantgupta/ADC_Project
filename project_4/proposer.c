@@ -222,7 +222,6 @@ PROPOSE:
 				pthread_exit(0);
 				return NULL ;
 }
-
 // Proposer.
 // This will be called by rpc_kev_server
 bool run(char request[1024], bool read_flag){
@@ -232,8 +231,10 @@ bool run(char request[1024], bool read_flag){
 				pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 				printf("%s\n", request);
 				int i, ret; // Count of Peers.
-				char *ip[] = {"localhost", "localhost"}; // add ip here.
-				char *ports[] = {"10000", "10001"};  // add ports here.
+//				char *ip[] = {"localhost", "localhost"}; // add ip here.
+//				char *ports[] = {"10000", "10001"};  // add ports here.
+				char *ip[] = {"n01", "n02", "n03", "n04", "n05"}; // add ip here.
+				char *ports[] = {"10000", "10000", "10000", "10000", "10000"};  // add ports here.
 				int count = sizeof(ip) / sizeof(ip[0]);
 				struct host_addr
 				{

@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 const char *GET_FILE = "GET_buffer";
 const char *INIT_Promise = "INIT_Promise"; // store greatest promised id in this file
@@ -30,6 +31,7 @@ char *learner(char *);
 char *build_message(char *msg, long unsigned int promised_id);
 void server_sync(long unsigned int id);
 void serve_sync_request(int sockfd, long unsigned int current_id);
+void sleep_me();
 
 int main(int argc, char *argv[]){
 				if(argc != 2){
@@ -60,6 +62,7 @@ int main(int argc, char *argv[]){
 				printf("Acceptor Listening ..\n");
 				fflush(stdout);
 				while(1){
+								sleep_me();
 								char send_buff [1024] , recv_buff[1024];
 								/* accept the connection */
 								newsock = accept(sockfd, (struct sockaddr *)&client_addr, &sin_size);
@@ -146,6 +149,18 @@ int main(int argc, char *argv[]){
 				}
 				close(sockfd);
 				return 0;
+}
+
+void sleep_me(){
+	int p;
+	p = rand();
+	srand((unsigned)time(NULL));
+	int r = rand();
+	if((p + r) % 5 == 0){
+		printf("\n----\nSending myself to sleep for 10 seconds\n----\n");
+		sleep(10);
+	}
+	return;
 }
 
 char * build_message(char *msg, long unsigned int ID){
